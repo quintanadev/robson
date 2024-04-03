@@ -221,6 +221,36 @@
         }
     }
 
+    // Topbar Fullscreen Button
+    function initfullScreenContentListener() {
+        var self = this;
+        var fullScreenBtn = document.querySelector('[data-toggle="fullscreen-content"]');
+
+        if (fullScreenBtn) {
+            fullScreenBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                // document.body.classList.toggle('fullscreen-enable')
+                if (!document.fullscreenElement && /* alternative standard method */ !document.mozFullScreenElement && !document.webkitFullscreenElement) {  // current working methods
+                    if (document.documentElement.requestFullscreen) {
+                        document.querySelector('.content').requestFullscreen();
+                    } else if (document.documentElement.mozRequestFullScreen) {
+                        document.querySelector('.content').mozRequestFullScreen();
+                    } else if (document.documentElement.webkitRequestFullscreen) {
+                        document.querySelector('.content').webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+                    }
+                } else {
+                    if (document.cancelFullScreen) {
+                        document.cancelFullScreen();
+                    } else if (document.mozCancelFullScreen) {
+                        document.mozCancelFullScreen();
+                    } else if (document.webkitCancelFullScreen) {
+                        document.webkitCancelFullScreen();
+                    }
+                }
+            });
+        }
+    }
+
     // Show/Hide Password
     function initShowHidePassword() {
         $("[data-password]").on('click', function () {
@@ -364,6 +394,7 @@
         initMultiDropdown();
         initSearch();
         initfullScreenListener();
+        initfullScreenContentListener();
         initShowHidePassword();
         initFormValidation();
         initFormAdvance();
