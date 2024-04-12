@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class DataIntegratorConfig(AppConfig):
+class ApiConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'app.data_integrator'
+    name = 'app.api'

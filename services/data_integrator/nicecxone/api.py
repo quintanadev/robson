@@ -6,7 +6,7 @@ from dateutil.relativedelta import relativedelta
 from .auth import urls, auth
 
 def contact(db):
-  table_name = 'data_integrator_contact'
+  table_name = 'api_nicecontact'
 
   query = f"""
     SELECT SUBSTR(REPLACE(MAX(contactStart), 'T', ' '), 1, 19) AS contactStart
@@ -15,12 +15,11 @@ def contact(db):
   dt_updated = db.execute(query).fetchone()['contactStart']
 
   if dt_updated:
-    first_date = datetime.strptime(dt_updated, "%Y-%m-%d %H:%M:%S") + relativedelta(minutes=-30)
+    first_date = datetime.strptime(dt_updated, "%Y-%m-%d %H:%M:%S") + relativedelta(days=-7) # relativedelta(minutes=-30)
     filter_date = first_date
   else:
     first_date = date.today() + relativedelta(days=0, hours=3)
   last_date = first_date + relativedelta(days=1, hour=3, minute=0, second=0)
-  # last_date = datetime.now() + relativedelta(days=0, hours=3)
   first_date = datetime.strftime(first_date, "%Y-%m-%dT%H:%M:%S.000Z")
   last_date = datetime.strftime(last_date, "%Y-%m-%dT%H:%M:%S.000Z")
 
@@ -35,7 +34,7 @@ def contact(db):
   data = []
 
   while api_url != None:
-    print(f"Executando URL >>> {api_url}")
+    print(f"URL >>> {api_url}")
     api_request = requests.get(api_url, headers=headers)
     if api_request.status_code == 200:
       dict_data = json.loads(api_request.text)
@@ -59,11 +58,11 @@ def contact(db):
   try:
     if dt_updated:
       query = f"""
-        SELECT contact_id
+        SELECT contactId
         FROM '{table_name}'
-        WHERE datetime(contact_start) >= '{filter_date}'
+        WHERE datetime(contactStart) >= '{filter_date}'
       """
-      contacts = pd.read_sql_query(query, con=db, dtype={'contact_id': str})
+      contacts = pd.read_sql_query(query, con=db, dtype={'contactId': str})
       contacts = contacts.fillna('').astype(str)
       df = df.merge(contacts, how='outer', on=['contactId'], indicator=True)
       df = df.query('_merge=="left_only"')

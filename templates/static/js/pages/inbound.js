@@ -180,14 +180,186 @@ $(document).ready(async function () {
   chart_ns = init_chart_ns();
   chart_contacts = await init_chart_contacts();
 
-  var data_update = setInterval(async () => {
-    await fetch('http://127.0.0.1:8000/dashboard/get_data_inbound/', {
+  (data_update = async () => {
+    await fetch('http://127.0.0.1:8000/api/inbound/cards/', {
       method: 'GET',
     }).then((result) => {
-      result.json().then((data) => {
-        console.log(data);
+      result.json().then((res) => {
+        // console.log(res);
+        $('#data-atualizacao').html(res.data.data_atualizacao);
+        $('#fila').html(res.data.fila);
+        $('#tempo-fila').html(res.data.tempo_fila);
+        $('#agentes-logados').html(res.data.agentes_logados + ' / ' + res.data.agentes_pausas);
+        $('#agentes-disponiveis').html(res.data.agentes_disponiveis);
+        $('#contatos-abandonados').html(parseInt(res.data.contatos_abandonados).toLocaleString('pt-BR'));
+        $('#contatos-recebidos').html(parseInt(res.data.contatos_recebidos).toLocaleString('pt-BR'));
+        $('#percentual-abandono').html(res.data.percentual_abandono);
+        $('#percentual-atendimento').html(res.data.percentual_atendimento);
+        $('#tma').html(res.data.tma);
+        $('#tmt_segundos').html(parseInt(res.data.tmt_segundos).toLocaleString('pt-BR'));
+        $('#tme').html(res.data.tme);
+
+        if (res.data.fila > 5) {
+          $('.card-fila').addClass("border-danger");
+        } else if (res.data.fila > 0) {
+          $('.card-fila').addClass("border-warning");
+        } else {
+          $('.card-fila').removeClass("border-danger");
+          $('.card-fila').removeClass("border-warning");
+        }
+
+        if (res.data.tempo_fila_segundos > 20) {
+          $('.card-tempo-fila').addClass("border-danger");
+        } else if (res.data.tempo_fila_segundos > 0) {
+          $('.card-tempo-fila').addClass("border-warning");
+        } else {
+          $('.card-tempo-fila').removeClass("border-danger");
+          $('.card-tempo-fila').removeClass("border-warning");
+        }
+
+        if (res.data.agentes_disponiveis > 0) {
+          if (res.data.fila > 0 || res.data.agentes_disponiveis > 5) {
+            $('.card-agentes-disponiveis').removeClass("border-warning");
+            $('.card-agentes-disponiveis').addClass("border-danger");
+          } else {
+            $('.card-agentes-disponiveis').removeClass("border-warning");
+            $('.card-agentes-disponiveis').removeClass("border-danger");
+          }
+        } else {
+          $('.card-agentes-disponiveis').removeClass("border-danger");
+          $('.card-agentes-disponiveis').addClass("border-warning");
+        }
+
+        if (res.data.agentes_logados > res.data.forecast_agentes) {
+          $('.card-agentes-logados').removeClass("border-danger");
+        } else {
+          $('.card-agentes-logados').addClass("border-danger");
+        }
+
+        if (res.data.percentual_atendimento >= res.data.forecast_percentual_atendimento) {
+          $('#icon-percentual-atendimento').removeClass("fe-arrow-down text-danger me-1");
+          $('#icon-percentual-atendimento').addClass("fe-arrow-up text-success me-1");
+        } else {
+          $('#icon-percentual-atendimento').removeClass("fe-arrow-up text-success me-1");
+          $('#icon-percentual-atendimento').addClass("fe-arrow-down text-danger me-1");
+        }
+
+        if (res.data.tme_segundos > 20) {
+          $('#icon-tme').removeClass("fe-arrow-down text-success me-1");
+          $('#icon-tme').addClass("fe-arrow-up text-danger me-1");
+        } else {
+          $('#icon-tme').removeClass("fe-arrow-up text-danger me-1");
+          $('#icon-tme').addClass("fe-arrow-down text-success me-1");
+        }
+
+        var colors_ns = parseFloat(res.data.nivel_servico) >= 80 ? ['#1ABC9C'] : ['#F1556C'];
+        chart_ns.updateSeries([parseFloat(res.data.nivel_servico)]);
+        chart_ns.updateOptions({
+          colors: colors_ns
+        });
+
+        seriesData.shift()
+        seriesData.push(parseInt(res.data.contatos_em_atendimento))
+        // seriesDataFore.shift()
+        // seriesDataFore.push(parseInt(res.data.forecast_em_atendimento))
+        seriesCategories.shift()
+        seriesCategories.push(res.data.data_atualizacao.substr(-8))
+
+        // chart_contacts.updateSeries([{data: seriesDataFore}, {data: seriesData}]);
+        chart_contacts.updateSeries([{data: seriesData}, {data: seriesData}]);
+        chart_contacts.updateOptions({
+          xaxis: {
+            categories: seriesCategories
+          },
+          yaxis: {
+            min: 0,
+            max: Math.max(Math.max(...seriesData), Math.max(...seriesData)) * 1.2
+            // max: Math.max(Math.max(...seriesData), Math.max(...seriesDataFore)) * 1.2
+          },
+          subtitle: {
+            text: res.data.contatos_em_atendimento
+          }
+        })
+
+        JSON.parse(res.data.skills).forEach(el => {
+          obj = $("#skill-" + el["id_skill"])
+          obj.find(".skill-volume").html(parseInt(el["qtd_contatos_oferecidos"]).toLocaleString('pt-BR'));
+          obj.find(".skill-em-atendimento").html(parseInt(el["qtd_contatos_ativos"]).toLocaleString('pt-BR'));
+          obj.find(".skill-percentual-abandono").html(el["per_abandono"]);
+          obj.find(".skill-agentes-disponiveis").html(parseInt(el["qtd_agentes_disponiveis"]).toLocaleString('pt-BR'));
+        });
       })
-    })
-  }, 5000)
+    });
+    setTimeout(data_update, 5000)
+  })()
 
 });
+
+
+// if (msg.data.data_atualizacao) {
+  
+//   $('#ns-projetado').html(msg.data.nivel_servico_projetado);
+//   $('#forecast-percentual-volume').html(msg.data.forecast_percentual_volume);
+//   $('#negocios').html(msg.data.negocios);
+//   $('#percentual-conversao').html(msg.data.percentual_conversao);
+//   $('#percentual-negocios-comparativo').html(msg.data.percentual_negocios_comparativo);
+//   $('#percentual-abandono-comparativo').html(msg.data.percentual_abandono_comparativo);
+//   $('#percentual-volume-comparativo').html(msg.data.percentual_volume_comparativo);
+//   $('#percentual-tma-comparativo').html(msg.data.percentual_tma_comparativo);
+
+//   if (msg.data.nivel_servico_projetado >= 80) {
+//     $('#icon-ns-projetado').removeClass("fe-arrow-down text-danger me-1");
+//     $('#icon-ns-projetado').addClass("fe-arrow-up text-success me-1");
+//   } else {
+//     $('#icon-ns-projetado').removeClass("fe-arrow-up text-success me-1");
+//     $('#icon-ns-projetado').addClass("fe-arrow-down text-danger me-1");
+//   }
+
+//   if (msg.data.percentual_volume_comparativo >= 0) {
+//     $('#icon-percentual-volume-comparativo').removeClass("fa fa-caret-down text-danger me-1");
+//     $('#icon-percentual-volume-comparativo').addClass("fa fa-caret-up text-success me-1");
+//     $('#card-volume h2').removeClass("text-danger");
+//     $('#card-volume h2').addClass("text-success");
+//   } else {
+//     $('#icon-percentual-volume-comparativo').removeClass("fa fa-caret-up text-success me-1");
+//     $('#icon-percentual-volume-comparativo').addClass("fa fa-caret-down text-danger me-1");
+//     $('#card-volume h2').removeClass("text-success");
+//     $('#card-volume h2').addClass("text-danger");
+//   }
+
+//   if (msg.data.percentual_abandono_comparativo <= 0) {
+//     $('#icon-percentual-abandono-comparativo').removeClass("fa fa-caret-up text-danger me-1");
+//     $('#icon-percentual-abandono-comparativo').addClass("fa fa-caret-down text-success me-1");
+//     $('#card-abandono h2').removeClass("text-danger");
+//     $('#card-abandono h2').addClass("text-success");
+//   } else {
+//     $('#icon-percentual-abandono-comparativo').removeClass("fa fa-caret-down text-success me-1");
+//     $('#icon-percentual-abandono-comparativo').addClass("fa fa-caret-up text-danger me-1");
+//     $('#card-abandono h2').removeClass("text-success");
+//     $('#card-abandono h2').addClass("text-danger");
+//   }
+ 
+//   if (msg.data.percentual_negocios_comparativo >= 0) {
+//     $('#icon-percentual-negocios-comparativo').removeClass("fa fa-caret-down text-danger me-1");
+//     $('#icon-percentual-negocios-comparativo').addClass("fa fa-caret-up text-success me-1");
+//     $('#card-negocios h2').removeClass("text-danger");
+//     $('#card-negocios h2').addClass("text-success");
+//   } else {
+//     $('#icon-percentual-negocios-comparativo').removeClass("fa fa-caret-up text-success me-1");
+//     $('#icon-percentual-negocios-comparativo').addClass("fa fa-caret-down text-danger me-1");
+//     $('#card-negocios h2').removeClass("text-success");
+//     $('#card-negocios h2').addClass("text-danger");
+//   }
+
+//   if (msg.data.percentual_tma_comparativo <= 0) {
+//     $('#icon-percentual-tma-comparativo').removeClass("fa fa-caret-up text-danger me-1");
+//     $('#icon-percentual-tma-comparativo').addClass("fa fa-caret-down text-success me-1");
+//     $('#card-tma h2').removeClass("text-danger");
+//     $('#card-tma h2').addClass("text-success");
+//   } else {
+//     $('#icon-percentual-tma-comparativo').removeClass("fa fa-caret-down text-success me-1");
+//     $('#icon-percentual-tma-comparativo').addClass("fa fa-caret-up text-danger me-1");
+//     $('#card-tma h2').removeClass("text-success");
+//     $('#card-tma h2').addClass("text-danger");
+//   }
+// }

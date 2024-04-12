@@ -18,7 +18,19 @@ class Mailing(models.Model):
   def __str__(self) -> str:
     return self.cpf
 
-class Contact(models.Model):
+class NiceDisposition(models.Model):
+  dispositionId = models.CharField(max_length=100, primary_key=True)
+  dispositionName = models.CharField(max_length=100)
+  notes = models.CharField(max_length=100)
+  lastUpdated = models.CharField(max_length=100)
+  classificationId = models.CharField(max_length=100)
+  systemOutcome = models.CharField(max_length=100)
+  isPreviewDisposition = models.CharField(max_length=100)
+
+  def __str__(self) -> str:
+    return self.dispositionName
+
+class NiceContact(models.Model):
   abandoned = models.CharField(max_length=100)
   abandonSeconds = models.CharField(max_length=100)
   acwSeconds = models.CharField(max_length=100)
@@ -54,7 +66,7 @@ class Contact(models.Model):
   pointOfContactName = models.CharField(max_length=100)
   postQueueSeconds = models.CharField(max_length=100)
   preQueueSeconds = models.CharField(max_length=100)
-  primaryDispositionId = models.CharField(max_length=100)
+  primaryDispositionId = models.ForeignKey(NiceDisposition, blank=True, null=True, on_delete=models.CASCADE)
   refuseReason = models.CharField(max_length=100)
   refuseTime = models.CharField(max_length=100)
   releaseSeconds = models.CharField(max_length=100)
@@ -76,7 +88,20 @@ class Contact(models.Model):
   def __str__(self) -> str:
     return self.contact_id
 
-class AgentState(models.Model):
+class NiceSkill(models.Model):
+  skillId = models.CharField(max_length=100, primary_key=True)
+  skillName = models.CharField(max_length=100)
+  campaignId = models.CharField(max_length=100)
+  campaignName = models.CharField(max_length=100)
+  notes = models.CharField(max_length=100)
+  scriptName = models.CharField(max_length=100)
+  callSuppressionScriptId = models.CharField(max_length=100)
+  agentless = models.CharField(max_length=100)
+
+  def __str__(self) -> str:
+    return self.skillName
+
+class NiceAgentState(models.Model):
   stateIndex = models.CharField(max_length=100)
   startDate = models.CharField(max_length=100)
   agentId = models.CharField(max_length=100)
@@ -100,4 +125,19 @@ class AgentState(models.Model):
   teamNo = models.CharField(max_length=100)
 
   def __str__(self) -> str:
-    return self.agentId
+    return f"{self.agentId} - {self.stateIndex} - {self.agentSessionId}"
+
+class Forecast(models.Model):
+  data = models.DateField()
+  intervalo = models.CharField(max_length=8)
+  volume = models.DecimalField(max_digits=20, decimal_places=13)
+  tmo = models.DecimalField(max_digits=20, decimal_places=13)
+  abandono = models.DecimalField(max_digits=20, decimal_places=13)
+  agentesSemIndisp = models.DecimalField(max_digits=20, decimal_places=13)
+  agentesComIndisp = models.DecimalField(max_digits=20, decimal_places=13)
+  nivelServico = models.DecimalField(max_digits=20, decimal_places=13)
+  trafego = models.DecimalField(max_digits=20, decimal_places=13)
+  atendidasNivelServico = models.DecimalField(max_digits=20, decimal_places=13)
+
+  def __str__(self) -> str:
+    return f"{self.data} - {self.intervalo}"
