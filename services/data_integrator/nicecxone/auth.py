@@ -1,17 +1,21 @@
 import requests
 import json
+import os
+from dotenv import load_dotenv
 
 def auth():
+  load_dotenv()
+
   auth = {
     "url": "https://cxone.niceincontact.com/auth/token",
-    "username": "8127a9ec-5d09-44f9-849a-9cca0bcb4ad8",
-    "password": "kRIcCunt9NrAcHDRzlZigA=="
+    "username": os.getenv("NICECXONE_GLOBAL_USER"),
+    "password": os.getenv("NICECXONE_GLOBAL_PASS")
   }
 
   auth_data = {
     "grant_type": "password",
-    "username": "ASRKDRVHWRSIDGNDUTTYZSSRHAU7YXV655ZNO3PG2F3PFGNCKENA====",
-    "password": "MAP4EET7QAYST7CLP3QKAB2MFQCPMG43LO4FJ75HCRKXJWAPUVZA===="
+    "username": os.getenv("NICECXONE_USER"),
+    "password": os.getenv("NICECXONE_PASS")
   }
 
   headers = {
