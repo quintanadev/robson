@@ -146,6 +146,7 @@ def get_dados_receptivo(data_atual, intervalo_atual, data_comparativo):
     SELECT
       date(contactStart, '-3 hours') AS data,
       skillName AS skill,
+      pointOfContactName AS origem,
       COUNT(*) AS volume,
       SUM(IIF(abandoned = 'True', 1, 0)) AS abandonadas,
       SUM(IIF(abandoned = 'False', 1, 0)) AS atendidas,
@@ -153,12 +154,12 @@ def get_dados_receptivo(data_atual, intervalo_atual, data_comparativo):
       SUM(IIF(notes LIKE '%sucesso%', 1, 0)) AS negocios,
       SUM(agentSeconds) AS tempo_atendimento,
       MAX(datetime(contactStart, '-3 hours')) AS data_atualizacao
-    FROM 'data_integrator_contacts' AS c
-    LEFT JOIN 'data_integrator_nice_dispositions' AS d ON CAST(d.dispositionId AS INTEGER)=CAST(c.primaryDispositionId AS INTEGER)
+    FROM 'api_nicecontact' AS c
+    LEFT JOIN 'api_nicedisposition' AS d ON CAST(d.dispositionId AS INTEGER)=CAST(c.primaryDispositionId AS INTEGER)
     WHERE campaignName IN ('RECEPTIVO', 'COB - RECEPTIVO DIGITAL')
     AND date(contactStart, '-3 hours') IN ('{data_atual}', '{data_comparativo}')
     AND CAST(SUBSTR(datetime(contactStart, '-3 hours'), 12, 2)||IIF(CAST(SUBSTR(datetime(contactStart, '-3 hours'), 15, 2) AS INTEGER) >= 30, '30', '00') AS INTEGER) <= {int(intervalo_atual[:5].replace(":", ""))}
-    GROUP BY date(contactStart, '-3 hours'), skillName
+    GROUP BY date(contactStart, '-3 hours'), skillName, pointOfContactName
   """
   df = pd.read_sql_query(query, con=db, dtype={"data": str, "volume": int, "abandonadas": int, "negocios": int})
  

@@ -15,7 +15,7 @@ def contact(db):
   dt_updated = db.execute(query).fetchone()['contactStart']
 
   if dt_updated:
-    first_date = datetime.strptime(dt_updated, "%Y-%m-%d %H:%M:%S") + relativedelta(days=-7) # relativedelta(minutes=-30)
+    first_date = datetime.strptime(dt_updated, "%Y-%m-%d %H:%M:%S") + relativedelta(minutes=-30)
     filter_date = first_date
   else:
     first_date = date.today() + relativedelta(days=0, hours=3)
@@ -80,4 +80,46 @@ def contact(db):
     msg = "Erro ao salvar contatos..."
   else:
     msg = "Contatos gravados na tabela..."
+  return msg
+
+def dimensions(db):
+  apis = [
+    {"api_link": "/dispositions", "table_name": "api_nicedisposition", "extract": "dispositions", "params": {}},
+    {"api_link": "/dispositions/classifications", "table_name": "api_niceclassification", "extract": "classificationResults", "params": {}},
+    {"api_link": "/skills", "table_name": "api_niceskill", "extract": "skills", "params": {"fields": "skillId,skillName,campaignId,campaignName,notes,scriptName,callSuppressionScriptId,agentless"}},
+    {"api_link": "/agents", "table_name": "api_niceagent", "extract": "agents", "params": {"fields": "agentId,userName,firstName,lastName,teamId,teamName,lastLogin,profileName,notes,createDate,custom1,custom2,custom3,custom4,custom5", "isActive": "true"}},
+  ]
+  headers = auth()
+
+  for x in apis:
+    api_link = x["api_link"]
+    table_name = x["table_name"]
+    api_url = urls()["cxone"] + api_link
+
+    columns = []
+    data = []
+    params = x["params"]
+
+    print(f"Executando api: {api_link}")
+    api_request = requests.get(api_url, params=params, headers=headers)
+    dict_data = json.loads(api_request.text)
+    
+    for e in dict_data.get(x["extract"]):
+      columns = e.keys()
+      data.append(e.values())
+
+    df = pd.DataFrame(data, columns=columns)
+    try:
+      for index, row in df.iterrows():
+        try:
+          df_row = row.to_frame().T
+          df_row.to_sql(table_name, db, if_exists="append", index=False)
+          db.commit()
+        except Exception as e:
+          pass
+    except Exception as e:
+      msg = f"Erro ao salvar contatos: {e}"
+      print(msg)
+    else:
+      msg = f"Dados gravados na tabela..."
   return msg
