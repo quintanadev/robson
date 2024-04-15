@@ -134,7 +134,7 @@ def get_sla_skill_summary():
     "averageWrapTime": "tempo_medio_tabulando",
     "averageSpeedToAnswer": "tempo_medio_fila"
   })
- 
+  
   return df
 
 

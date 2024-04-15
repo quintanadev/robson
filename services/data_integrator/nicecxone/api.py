@@ -23,7 +23,7 @@ def contact(db):
   first_date = datetime.strftime(first_date, "%Y-%m-%dT%H:%M:%S.000Z")
   last_date = datetime.strftime(last_date, "%Y-%m-%dT%H:%M:%S.000Z")
 
-  api_link = '/contacts/completed'
+  api_link = 'contacts/completed'
   query = '?startDate={}&endDate={}&top=10000'
   api = api_link + query.format(first_date, last_date)
   print(f"Executando api: {api_link} >>> De {first_date} até {last_date}")

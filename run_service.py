@@ -3,6 +3,6 @@ from services.data_integrator.nicecxone.api import contact, dimensions
 
 db = get_db()
 dimensions = dimensions(db)
-contact = contact(db)
 print(dimensions)
+contact = contact(db)
 print(contact)

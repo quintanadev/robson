@@ -1,22 +1,32 @@
 $(document).ready(async function () {
   var next_slide = function () {
-    if ($("#slide-kpis").hasClass("d-none")) {
-      $("#slide-skills").addClass("fadeOutLeft animated").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function () {
-        $(this).removeClass("fadeOutLeft animated");
-        $(this).addClass("d-none");
-
-        $("#slide-kpis").removeClass("d-none");
-        $("#slide-kpis").addClass("fadeInRight animated").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function () {
-          $(this).removeClass("fadeInRight animated");
-        });
-      });
-    } else {
+    if ($("#slide-kpis").hasClass("d-active")) {
       $("#slide-kpis").addClass("fadeOutLeft animated").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function () {
-        $(this).removeClass("fadeOutLeft animated");
+        $(this).removeClass("fadeOutLeft animated d-active");
         $(this).addClass("d-none");
 
         $("#slide-skills").removeClass("d-none");
-        $("#slide-skills").addClass("fadeInRight animated").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function () {
+        $("#slide-skills").addClass("fadeInRight animated d-active").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function () {
+          $(this).removeClass("fadeInRight animated");
+        });
+      });
+    } else if ($("#slide-skills").hasClass("d-active")) {
+      $("#slide-skills").addClass("fadeOutLeft animated").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function () {
+        $(this).removeClass("fadeOutLeft animated d-active");
+        $(this).addClass("d-none");
+
+        $("#slide-dispositions").removeClass("d-none");
+        $("#slide-dispositions").addClass("fadeInRight animated d-active").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function () {
+          $(this).removeClass("fadeInRight animated");
+        });
+      });
+    } else if ($("#slide-dispositions").hasClass("d-active")) {
+      $("#slide-dispositions").addClass("fadeOutLeft animated").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function () {
+        $(this).removeClass("fadeOutLeft animated d-active");
+        $(this).addClass("d-none");
+
+        $("#slide-kpis").removeClass("d-none");
+        $("#slide-kpis").addClass("fadeInRight animated d-active").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function () {
           $(this).removeClass("fadeInRight animated");
         });
       });
@@ -185,7 +195,7 @@ $(document).ready(async function () {
       method: 'GET',
     }).then((result) => {
       result.json().then((res) => {
-        // console.log(res);
+        console.log(res);
         $('#data-atualizacao').html(res.data.data_atualizacao);
         $('#fila').html(res.data.fila);
         $('#tempo-fila').html(res.data.tempo_fila);
@@ -325,21 +335,19 @@ $(document).ready(async function () {
 
         seriesData.shift()
         seriesData.push(parseInt(res.data.contatos_em_atendimento))
-        // seriesDataFore.shift()
-        // seriesDataFore.push(parseInt(res.data.forecast_em_atendimento))
+        seriesDataFore.shift()
+        seriesDataFore.push(parseInt(res.data.forecast_em_atendimento))
         seriesCategories.shift()
         seriesCategories.push(res.data.data_atualizacao.substr(-8))
 
-        // chart_contacts.updateSeries([{data: seriesDataFore}, {data: seriesData}]);
-        chart_contacts.updateSeries([{data: seriesData}, {data: seriesData}]);
+        chart_contacts.updateSeries([{data: seriesDataFore}, {data: seriesData}]);
         chart_contacts.updateOptions({
           xaxis: {
             categories: seriesCategories
           },
           yaxis: {
             min: 0,
-            max: Math.max(Math.max(...seriesData), Math.max(...seriesData)) * 1.2
-            // max: Math.max(Math.max(...seriesData), Math.max(...seriesDataFore)) * 1.2
+            max: Math.max(Math.max(...seriesData), Math.max(...seriesDataFore)) * 1.2
           },
           subtitle: {
             text: res.data.contatos_em_atendimento
@@ -355,7 +363,17 @@ $(document).ready(async function () {
         });
       })
     });
-    setTimeout(data_update, 50000)
-  })()
+    setTimeout(data_update, 5000);
+  })();
 
+  (disposition_update = async () => {
+    await fetch('http://127.0.0.1:8000/api/inbound/dispositions/', {
+      method: 'GET',
+    }).then((result) => {
+      result.json().then((res) => {
+        console.log(res);
+      });
+    });
+    setTimeout(disposition_update, 30000);
+  })();
 });

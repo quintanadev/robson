@@ -19,7 +19,7 @@ def inbound_cards(request):
   data_atualizacao = df["data_atualizacao"].max()
   data_atual = data_atualizacao.strftime("%Y-%m-%d")
   intervalo_atual = ("0" if data_atualizacao.hour < 10 else "") + str(data_atualizacao.hour) + ":" + ("30" if data_atualizacao.minute >= 30 else "00") + ":00"
-  data_comparativo = data_atualizacao + relativedelta(days=-7)
+  data_comparativo = data_atualizacao + relativedelta(days=-6)
   while data_comparativo.weekday() == 6 or data_comparativo.date() in [
       datetime(2023, 10, 12).date(),
       datetime(2023, 11, 15).date(),
@@ -75,9 +75,9 @@ def inbound_cards(request):
   forecast_agentes = round(df_fore_intervalo["agentes_com_indisp"].max(), 0)
   
   df_db = get_dados_receptivo(data_atual, intervalo_atual, data_comparativo)
+  print(df_db)
   
   negocios = df_db.loc[df_db["data"] == data_atual]["negocios"].sum()
-  print(negocios)
   target = df_db.loc[df_db["data"] == data_atual]["target"].sum() + negocios
   percentual_conversao = 0 if target == 0 else round((negocios / target) * 100, 2)
   
@@ -90,8 +90,6 @@ def inbound_cards(request):
   percentual_abandono_comparativo = 0 if abandonadas_comparativo == 0 else round((contatos_abandonados / abandonadas_comparativo - 1) * 100, 2)
   percentual_volume_comparativo = 0 if volume_comparativo == 0 else round((contatos_recebidos / volume_comparativo - 1) * 100, 2)
   percentual_tma_comparativo = 0 if atendidas_comparativo == 0 else round((tma_segundos / (df_db.loc[df_db["data"] == data_comparativo]["tempo_atendimento"].sum() / atendidas_comparativo) - 1) * 100, 2)
-
-  # df_clientes = get_clientes_receptivo(data_atual)
 
   data_response = {
     "data": {
@@ -130,3 +128,9 @@ def inbound_cards(request):
     "updated": datetime.strftime(datetime.now(), "%d/%m/%Y %H:%M:%S")
   }
   return JsonResponse(data_response)
+
+def get_dispositions_list(request):
+  disp_list = {
+    'teste': 'ok'
+  }
+  return JsonResponse(disp_list)
