@@ -6,7 +6,7 @@
     var color = '#98a6ad';
     if (n == 'success') {
       color = '#5ba035';
-    } else if (n == 'error') {
+    } else if (n == 'danger') {
       color = '#bf441d';
     } else if (n == 'warning') {
       color = '#da8609';

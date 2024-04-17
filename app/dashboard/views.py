@@ -8,7 +8,6 @@ def index(request):
   else:
     return HttpResponseNotFound('Not Found')
 
-
 def inbound(request):
   if request.method == 'GET':
     return render(request, 'inbound.html')
@@ -19,6 +18,13 @@ def inbound(request):
 def whatsapp(request):
   if request.method == 'GET':
     return render(request, 'whatsapp.html')
+  
+  else:
+    return HttpResponseNotFound('Not Found')
+
+def credito(request):
+  if request.method == 'GET':
+    return render(request, 'credito.html')
   
   else:
     return HttpResponseNotFound('Not Found')

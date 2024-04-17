@@ -191,6 +191,20 @@
         });
     }
 
+    // Fullscreen toggle
+    function initfullScreenToggle() {
+        function screenToggle() {
+            // if (!document.webkitIsFullScreen && !document.mozFullScreen && !document.msFullscreenElement) {  // current working methods
+            //     document.body.classList.toggle('fullscreen-enable')
+            // }
+            document.body.classList.toggle('fullscreen-enable');
+        }
+        document.addEventListener("webkitfullscreenchange", screenToggle, false);
+        document.addEventListener("mozfullscreenchange", screenToggle, false);
+        document.addEventListener("fullscreenchange", screenToggle, false);
+        document.addEventListener("MSFullscreenChange", screenToggle, false);
+    }
+
     // Topbar Fullscreen Button
     function initfullScreenListener() {
         var self = this;
@@ -393,6 +407,7 @@
         initPortletCard();
         initMultiDropdown();
         initSearch();
+        initfullScreenToggle();
         initfullScreenListener();
         initfullScreenContentListener();
         initShowHidePassword();

@@ -9719,6 +9719,10 @@ textarea.form-control-lg {
   background-color: rgba(var(--ct-body-bg-rgb), var(--ct-bg-opacity)) !important;
 }
 
+.bg-content{
+  background-color: var(--ct-body-bg) !important;
+}
+
 .bg-transparent {
   --ct-bg-opacity: 1;
   background-color: transparent !important;

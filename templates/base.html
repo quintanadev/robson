@@ -11,9 +11,9 @@
 
   <title>{% block site-title %}{% endblock %}</title>
 
-  <link href="{% static 'libs/jquery-toast-plugin/jquery.toast.min.css' %}" rel="stylesheet" type="text/css" />
-
   <script src="{% static 'js/head.js' %}"></script>
+  
+  <link href="{% static 'libs/jquery-toast-plugin/jquery.toast.min.css' %}" rel="stylesheet" type="text/css" />
   <link rel="shortcut icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
   <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" id="app-style">
   <link rel="stylesheet" href="{% static 'css/app.min.css' %}">
@@ -119,7 +119,7 @@
   <script src="{% static 'libs/jquery-toast-plugin/jquery.toast.min.js' %}"></script>
 
   <script src="{% static 'js/notifications.js' %}"></script>
-
+  
   {% block script %}{% endblock %}
 </body>
 

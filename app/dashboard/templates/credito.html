@@ -11,31 +11,16 @@
 {% endblock %}
 
 {% block page-functions %}
-<li class="d-none d-md-inline-block me-2">
-  <a class="nav-link play-slide" href="javascript: void(0);">
-    <i class="fe-play font-16"></i>
-  </a>
-</li>
-<li class="d-none d-md-inline-block me-2">
-  <a class="nav-link next-slide" href="javascript: void(0);">
-    <i class="fe-skip-forward font-16"></i>
-  </a>
-</li>
 {% endblock %}
 
 {% block content %}
-{% include 'inbound-cards.html' %}
-{% include 'inbound-kpis.html' %}
-{% include 'inbound-skills-v2.html' %}
-{% include 'inbound-dispositions.html' %}
+CREDITO
 {% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static 'libs/animate.css/animate.min.css' %}">
-<link rel="stylesheet" href="{% static 'libs/animate.css/animate.compat.css' %}">
 {% endblock %}
 
 {% block script %}
 <script src="{% static 'libs/apexcharts/apexcharts.min.js' %}"></script>
-<script src="{% static 'js/pages/inbound.js' %}"></script>
+<script src="{% static 'js/pages/credito.js' %}"></script>
 {% endblock %}

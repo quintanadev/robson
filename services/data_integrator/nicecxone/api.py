@@ -16,6 +16,7 @@ def contact(db):
 
   if dt_updated:
     first_date = datetime.strptime(dt_updated, "%Y-%m-%d %H:%M:%S") + relativedelta(minutes=-30)
+    # first_date = date.today() + relativedelta(days=-3, hours=3)
     filter_date = first_date
   else:
     first_date = date.today() + relativedelta(days=0, hours=3)

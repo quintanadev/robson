@@ -145,13 +145,19 @@ def get_dados_receptivo(data_atual, intervalo_atual, data_comparativo):
   query = f"""
     SELECT
       date(contactStart, '-3 hours') AS data,
-      skillName AS skill,
-      pointOfContactName AS origem,
-      COUNT(*) AS volume,
-      SUM(IIF(abandoned = 'True', 1, 0)) AS abandonadas,
-      SUM(IIF(abandoned = 'False', 1, 0)) AS atendidas,
-      SUM(IIF(notes LIKE '%target%', 1, 0)) AS target,
-      SUM(IIF(notes LIKE '%sucesso%', 1, 0)) AS negocios,
+      CASE
+        WHEN skillName != 'RECEPTIVO 4004' THEN skillName
+        WHEN UPPER(pointOfContactName) LIKE '%COMMERCE%' THEN 'ECOMMERCE'
+        WHEN UPPER(pointOfContactName) LIKE '%MEU CART%' THEN 'MEU CARTAO'
+        WHEN UPPER(pointOfContactName) LIKE '%0800%' OR skillName = 'RECEPTIVO 0800' THEN 'RECEPTIVO 0800'
+        WHEN UPPER(pointOfContactName) NOT LIKE '%0800%' THEN 'RECEPTIVO URA'
+        ELSE '' END AS nome_skill,
+      IIF(skillName IN ('RECEPTIVO LOJAS', 'RECEPTIVO AGENTE DIGITAL'), skillName, 'RECEPTIVO 4004') as nome_campanha,
+      COUNT(*) AS qtd_contatos_oferecidos,
+      SUM(IIF(abandoned = 'True', 1, 0)) AS qtd_contatos_abandonados,
+      SUM(IIF(abandoned = 'False', 1, 0)) AS qtd_contatos_atendidos,
+      SUM(IIF(notes LIKE '%target%', 1, 0)) AS qtd_contatos_target,
+      SUM(IIF(notes LIKE '%sucesso%', 1, 0)) AS qtd_contatos_negocios,
       SUM(agentSeconds) AS tempo_atendimento,
       MAX(datetime(contactStart, '-3 hours')) AS data_atualizacao
     FROM 'api_nicecontact' AS c
@@ -159,9 +165,35 @@ def get_dados_receptivo(data_atual, intervalo_atual, data_comparativo):
     WHERE campaignName IN ('RECEPTIVO', 'COB - RECEPTIVO DIGITAL')
     AND date(contactStart, '-3 hours') IN ('{data_atual}', '{data_comparativo}')
     AND CAST(SUBSTR(datetime(contactStart, '-3 hours'), 12, 2)||IIF(CAST(SUBSTR(datetime(contactStart, '-3 hours'), 15, 2) AS INTEGER) >= 30, '30', '00') AS INTEGER) <= {int(intervalo_atual[:5].replace(":", ""))}
-    GROUP BY date(contactStart, '-3 hours'), skillName, pointOfContactName
+    GROUP BY date(contactStart, '-3 hours'), CASE
+      WHEN skillName != 'RECEPTIVO 4004' THEN skillName
+      WHEN UPPER(pointOfContactName) LIKE '%COMMERCE%' THEN 'ECOMMERCE'
+      WHEN UPPER(pointOfContactName) LIKE '%MEU CART%' THEN 'MEU CARTAO'
+      WHEN UPPER(pointOfContactName) LIKE '%0800%' OR skillName = 'RECEPTIVO 0800' THEN 'RECEPTIVO 0800'
+      WHEN UPPER(pointOfContactName) NOT LIKE '%0800%' THEN 'RECEPTIVO URA'
+      ELSE '' END, IIF(skillName IN ('RECEPTIVO LOJAS', 'RECEPTIVO AGENTE DIGITAL'), skillName, 'RECEPTIVO 4004')
   """
-  df = pd.read_sql_query(query, con=db, dtype={"data": str, "volume": int, "abandonadas": int, "negocios": int})
+  df = pd.read_sql_query(query, con=db, dtype={"data": str, "qtd_contatos_oferecidos": int, "qtd_contatos_abandonados": int, "qtd_contatos_atendidos": int, "qtd_contatos_target": int, "qtd_contatos_negocios": int})
+ 
+  return df
+
+def get_dispositions():
+  from services.data_integrator.db import get_db
+  db = get_db()
+
+  query = f"""
+    SELECT
+      date(contactStart, '-3 hours') AS data,
+      campaignName AS nome_campanha,
+      dispositionName AS tabulacao,
+      COUNT(*) AS qtd_contatos_oferecidos
+    FROM 'api_nicecontact' AS c
+    LEFT JOIN 'api_nicedisposition' AS d ON CAST(d.dispositionId AS INTEGER)=CAST(c.primaryDispositionId AS INTEGER)
+    WHERE campaignName IN ('RECEPTIVO', 'COB - RECEPTIVO DIGITAL')
+    AND date(contactStart, '-3 hours') IN (SELECT MAX(date(contactStart, '-3 hours')) FROM 'api_nicecontact')
+    GROUP BY date(contactStart, '-3 hours'), campaignName, dispositionName
+  """
+  df = pd.read_sql_query(query, con=db, dtype={"data": str, "qtd_contatos_oferecidos": int})
  
   return df
 
