@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     # MY APPS
     'app.dashboard',
     'app.api',
+    'app.controldesk',
 ]
 
 MIDDLEWARE = [

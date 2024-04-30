@@ -53,7 +53,8 @@ def get_sla_skill_summary():
  
   df_sla = pd.DataFrame(data, columns=columns)
   # df_sla = df_sla.fillna('').astype(str)
-  df_sla = df_sla[["skillId", "totalContacts", "contactsWithinSLA", "contactsOutOfSLA"]]
+  df_sla = df_sla[["skillId", "contactsWithinSLA", "contactsOutOfSLA"]]
+  df_sla['totalContacts'] = df_sla['contactsWithinSLA'] + df_sla['contactsOutOfSLA']
   df = df_activity.merge(df_sla, how="left", on=["skillId"], validate="one_to_one")
  
   # SKILLS SUMMARY
@@ -76,7 +77,7 @@ def get_sla_skill_summary():
  
   df_skills = pd.DataFrame(data, columns=columns)
   # df_skills = df_skills.fillna('').astype(str)
-  df_skills = df_skills[["skillId", "abandonCount", "contactsOffered", "contactsHandled", "averageHandleTime", "averageWrapTime", "averageSpeedToAnswer"]]
+  df_skills = df_skills[["skillId", "abandonCount", "contactsQueued", "contactsHandled", "averageHandleTime", "averageWrapTime", "averageSpeedToAnswer"]]
  
   df_skills["averageHandleHour"] = df_skills["averageHandleTime"].apply(lambda x: (x.split("H"))[0].replace("PT", ""))
   df_skills.loc[(df_skills["averageHandleTime"].str.split("H")).str.len() == 1, "averageHandleHour"] = "0"
@@ -123,12 +124,12 @@ def get_sla_skill_summary():
     "agentsUnavailable": "qtd_agentes_indisponiveis",
     "agentsAvailable": "qtd_agentes_disponiveis",
     "agentsACW": "qtd_agentes_tabulando",
-    "agentsIdle": "qtd_agentes_pausa",
+    "agentsIdle": "qtd_agentes_ociosos",
     "totalContacts": "qtd_contatos_sla",
     "contactsWithinSLA": "qtd_contatos_dentro_sla",
     "contactsOutOfSLA": "qtd_contatos_fora_sla",
     "abandonCount": "qtd_contatos_abandonados",
-    "contactsOffered": "qtd_contatos_oferecidos",
+    "contactsQueued": "qtd_contatos_oferecidos",
     "contactsHandled": "qtd_contatos_atendidos",
     "averageHandleTime": "tempo_medio_atendimento",
     "averageWrapTime": "tempo_medio_tabulando",
@@ -150,7 +151,7 @@ def get_dados_receptivo(data_atual, intervalo_atual, data_comparativo):
         WHEN UPPER(pointOfContactName) LIKE '%COMMERCE%' THEN 'ECOMMERCE'
         WHEN UPPER(pointOfContactName) LIKE '%MEU CART%' THEN 'MEU CARTAO'
         WHEN UPPER(pointOfContactName) LIKE '%0800%' OR skillName = 'RECEPTIVO 0800' THEN 'RECEPTIVO 0800'
-        WHEN UPPER(pointOfContactName) NOT LIKE '%0800%' THEN 'RECEPTIVO URA'
+        WHEN UPPER(pointOfContactName) NOT LIKE '%0800%' THEN 'COBRANCA'
         ELSE '' END AS nome_skill,
       IIF(skillName IN ('RECEPTIVO LOJAS', 'RECEPTIVO AGENTE DIGITAL'), skillName, 'RECEPTIVO 4004') as nome_campanha,
       COUNT(*) AS qtd_contatos_oferecidos,
@@ -163,6 +164,7 @@ def get_dados_receptivo(data_atual, intervalo_atual, data_comparativo):
     FROM 'api_nicecontact' AS c
     LEFT JOIN 'api_nicedisposition' AS d ON CAST(d.dispositionId AS INTEGER)=CAST(c.primaryDispositionId AS INTEGER)
     WHERE campaignName IN ('RECEPTIVO', 'COB - RECEPTIVO DIGITAL')
+    AND pointOfContactName NOT IN ('inContactOutboundPOC')
     AND date(contactStart, '-3 hours') IN ('{data_atual}', '{data_comparativo}')
     AND CAST(SUBSTR(datetime(contactStart, '-3 hours'), 12, 2)||IIF(CAST(SUBSTR(datetime(contactStart, '-3 hours'), 15, 2) AS INTEGER) >= 30, '30', '00') AS INTEGER) <= {int(intervalo_atual[:5].replace(":", ""))}
     GROUP BY date(contactStart, '-3 hours'), CASE
@@ -170,7 +172,7 @@ def get_dados_receptivo(data_atual, intervalo_atual, data_comparativo):
       WHEN UPPER(pointOfContactName) LIKE '%COMMERCE%' THEN 'ECOMMERCE'
       WHEN UPPER(pointOfContactName) LIKE '%MEU CART%' THEN 'MEU CARTAO'
       WHEN UPPER(pointOfContactName) LIKE '%0800%' OR skillName = 'RECEPTIVO 0800' THEN 'RECEPTIVO 0800'
-      WHEN UPPER(pointOfContactName) NOT LIKE '%0800%' THEN 'RECEPTIVO URA'
+      WHEN UPPER(pointOfContactName) NOT LIKE '%0800%' THEN 'COBRANCA'
       ELSE '' END, IIF(skillName IN ('RECEPTIVO LOJAS', 'RECEPTIVO AGENTE DIGITAL'), skillName, 'RECEPTIVO 4004')
   """
   df = pd.read_sql_query(query, con=db, dtype={"data": str, "qtd_contatos_oferecidos": int, "qtd_contatos_abandonados": int, "qtd_contatos_atendidos": int, "qtd_contatos_target": int, "qtd_contatos_negocios": int})
@@ -190,6 +192,7 @@ def get_dispositions():
     FROM 'api_nicecontact' AS c
     LEFT JOIN 'api_nicedisposition' AS d ON CAST(d.dispositionId AS INTEGER)=CAST(c.primaryDispositionId AS INTEGER)
     WHERE campaignName IN ('RECEPTIVO', 'COB - RECEPTIVO DIGITAL')
+    AND pointOfContactName NOT IN ('inContactOutboundPOC')
     AND date(contactStart, '-3 hours') IN (SELECT MAX(date(contactStart, '-3 hours')) FROM 'api_nicecontact')
     GROUP BY date(contactStart, '-3 hours'), campaignName, dispositionName
   """

@@ -35,6 +35,7 @@ def auth():
 def urls():
   urls = {
     "cxone": 'https://api-c57.nice-incontact.com/incontactapi/services/v25.0/',
+    "cxone-v30": 'https://api-c57.nice-incontact.com/incontactapi/services/v30.0/',
     "users": 'https://na1.nice-incontact.com/user-management/v1/',
   }
 

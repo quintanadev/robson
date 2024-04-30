@@ -5,16 +5,37 @@
 
 {% block page-title %}
 <img src="{% static 'images/logo-nucleo.png' %}" alt="user-image" class="avatar-lg">
-<img src="{% static 'images/logo-nucleo-sm.png' %}" alt="logo" style="width: 100px;margin-right: 0.75rem;" class="image-dark">
-<img src="{% static 'images/logo-nucleo-sm-dark.png' %}" alt="logo" style="width: 100px;margin-right: 0.75rem;" class="image-light">
- Tempo Real | Receptivo
+<img src="{% static 'images/logo-nucleo-sm.png' %}" alt="logo" style="width: 100px;margin-right: 0.75rem;"
+  class="image-dark">
+<img src="{% static 'images/logo-nucleo-sm-dark.png' %}" alt="logo" style="width: 100px;margin-right: 0.75rem;"
+  class="image-light">
+Crédito e Prevenção à Fraude | Propostas Portal Realize
 {% endblock %}
 
 {% block page-functions %}
 {% endblock %}
 
 {% block content %}
-CREDITO
+<div class="row">
+  <div class="col-xl-4">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="header-title mb-0"><i class="fe-clock font-16"></i> Atualização: <span id="data-atualizacao">...</span></h4>
+        <div class="widget-chart text-center">
+          <div id="chart-ns" class="mt-0"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-8">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="header-title mb-0"><i class="fe-activity"></i> Hora a Hora</h4>
+        <div id="chart-hour" class="apex-charts pt-3 pb-0 my-0"></div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block css %}

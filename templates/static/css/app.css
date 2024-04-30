@@ -3236,6 +3236,10 @@ html[data-bs-theme=dark] .auth-brand .logo-dark {
   stroke: var(--ct-border-color)
 }
 
+.apexcharts-series rect {
+  fill: var(--ct-border-color)
+}
+
 .irs {
   position: relative;
   display: block;

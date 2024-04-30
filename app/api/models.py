@@ -182,3 +182,87 @@ class Forecast(models.Model):
 
   def __str__(self) -> str:
     return f"{self.data} - {self.intervalo}"
+  
+class PortalRealizeEncerradas(models.Model):
+  cpf = models.CharField(max_length=14, null=True)
+  nome = models.CharField(max_length=100, null=True)
+  tipoAnalise = models.CharField(max_length=100, null=True)
+  produto = models.CharField(max_length=100, null=True)
+  cartao = models.CharField(max_length=100, null=True)
+  canal = models.CharField(max_length=100, null=True)
+  captacao = models.CharField(max_length=100, null=True)
+  numeroProposta = models.CharField(max_length=100, null=True)
+  situacao = models.CharField(max_length=100, null=True)
+  dataInicio = models.CharField(max_length=100, null=True)
+  horaInicio = models.CharField(max_length=100, null=True)
+  dataFim = models.CharField(max_length=100, null=True)
+  horaFim = models.CharField(max_length=100, null=True)
+  tempoFila = models.CharField(max_length=100, null=True)
+  tempoAnalise = models.CharField(max_length=100, null=True)
+  tempoTotal = models.CharField(max_length=100, null=True)
+
+  def __str__(self) -> str:
+    return self.cpf
+  
+class DatabricksFatoMailing(models.Model):
+  periodo = models.IntegerField(null=True)
+  dataMailing = models.DateField(null=True)
+  familia = models.CharField(max_length=10, null=True)
+  segmento = models.CharField(max_length=20, null=True)
+  faixaAtraso = models.CharField(max_length=10, null=True)
+  momentoAtraso = models.CharField(max_length=20, null=True)
+  propensao = models.CharField(max_length=20, null=True)
+  qtdClientes = models.IntegerField(null=True)
+  valorAtraso = models.FloatField(null=True)
+  valorSaldo = models.FloatField(null=True)
+  qtdTentativas = models.IntegerField(null=True)
+  qtdAlo = models.IntegerField(null=True)
+  qtdLocalizado = models.IntegerField(null=True)
+  qtdCpc = models.IntegerField(null=True)
+  qtdTarget = models.IntegerField(null=True)
+  qtdSucesso = models.IntegerField(null=True)
+  qtdTentativasUnique = models.IntegerField(null=True)
+  qtdAloUnique = models.IntegerField(null=True)
+  qtdLocalizadoUnique = models.IntegerField(null=True)
+  qtdCpcUnique = models.IntegerField(null=True)
+  qtdTargetUnique = models.IntegerField(null=True)
+  qtdSucessoUnique = models.IntegerField(null=True)
+  qtdPagamentoUnique = models.IntegerField(null=True)
+  qtdDiasMailing = models.IntegerField(null=True)
+
+  def __str__(self) -> str:
+    return f"{self.dataMailing} - {self.segmento} - {self.familia} - {self.faixaAtraso}"
+
+class DatabricksAnaliticoNegocio(models.Model):
+  periodo = models.IntegerField(null=True)
+  periodoNegocio = models.IntegerField(null=True)
+  periodoVencimento = models.IntegerField(null=True)
+  periodoPagamento = models.IntegerField(null=True)
+  tipoNegocio = models.CharField(max_length=20, null=True)
+  dataNegocio = models.DateField(null=True)
+  dataVencimento = models.DateField(null=True)
+  dataPagamento = models.DateField(null=True)
+  cpf = models.CharField(max_length=11, null=True)
+  usuario = models.CharField(max_length=20, null=True)
+  diasAtraso = models.IntegerField(null=True)
+  segmento = models.CharField(max_length=20, null=True)
+  familia = models.CharField(max_length=20, null=True)
+  faixaAtraso = models.CharField(max_length=10, null=True)
+  canal = models.CharField(max_length=20, null=True)
+  qtdNegocios = models.IntegerField(null=True)
+  qtdPagamentos = models.IntegerField(null=True)
+  qtdQuebras = models.IntegerField(null=True)
+  parcelamento = models.IntegerField(null=True)
+  faixaParcelamento = models.CharField(max_length=20, null=True)
+  diasVencimento = models.IntegerField(null=True)
+  nomeColaborador = models.CharField(max_length=100, null=True)
+  nomeLider = models.CharField(max_length=100, null=True)
+  tipoCargo = models.CharField(max_length=50, null=True)
+  valorDivida = models.FloatField(null=True)
+  valorNegociado = models.FloatField(null=True)
+  valorPagamento = models.FloatField(null=True)
+  valorSaldoCadoc = models.FloatField(null=True)
+  faixaAtrasoCadoc = models.CharField(max_length=10, null=True)
+
+  def __str__(self) -> str:
+    return f"{self.cpf} - {self.tipoNegocio}"

@@ -13,6 +13,7 @@ def contact(db):
     FROM '{table_name}'
   """
   dt_updated = db.execute(query).fetchone()['contactStart']
+  print(dt_updated)
 
   if dt_updated:
     first_date = datetime.strptime(dt_updated, "%Y-%m-%d %H:%M:%S") + relativedelta(minutes=-30)
@@ -77,7 +78,8 @@ def contact(db):
         print("Sem novos registros para gravar!")
     else:
       df.to_sql(table_name, db, if_exists='append', index=False)
-  except:
+  except Exception as e:
+    print(str(e))
     msg = "Erro ao salvar contatos..."
   else:
     msg = "Contatos gravados na tabela..."

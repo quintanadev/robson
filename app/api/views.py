@@ -1,10 +1,14 @@
-import pandas as pd
 from django.http import JsonResponse, HttpResponseNotFound
+from django.core import serializers
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+import pandas as pd
+import json
 
 from services.data_integrator.nicecxone.realtime import get_sla_skill_summary, get_forecast, get_dados_receptivo, get_dispositions
 from services.data_integrator.takeblip.realtime import get_tickets_times, get_tickets_agents, get_tickets_tags, get_contacts_bot, get_nps, get_agents_status, get_tickets_status
+
+from .models import PortalRealizeEncerradas
 
 def realtime_inbound_cards(request):
   if request.method == 'GET':
@@ -53,11 +57,13 @@ def realtime_inbound_cards(request):
     nivel_servico = 0 if contatos_sla == 0 else round(contatos_dentro_sla / contatos_sla * 100, 2)
     nivel_servico_projetado = 0 if contatos_sla == 0 else round((contatos_dentro_sla + forecast_volume_sla_projetado) / (contatos_sla + forecast_volume_projetado) * 100, 2)
     fila = df["qtd_fila_skill"].sum()
+
     tempo_fila_segundos = (data_atualizacao - (df["tempo_fila_skill"].min() if fila > 0 else data_atualizacao)).total_seconds()
     tempo_fila = "00:00:00" if tempo_fila_segundos <= 0 else str(timedelta(seconds=tempo_fila_segundos)).split(".")[0].zfill(8)
     agentes_logados = df["qtd_agentes_logados"].max()
     agentes_disponiveis = df["qtd_agentes_disponiveis"].max()
-    agentes_pausas = df["qtd_agentes_pausa"].max() + df["qtd_agentes_indisponiveis"].max()
+    agentes_pausas = (df["qtd_agentes_indisponiveis"] - df["qtd_agentes_tabulando"]).max()
+    agentes_trabalhando = df["qtd_agentes_trabalhando"].sum()
     contatos_em_atendimento = df["qtd_contatos_ativos"].sum()
     contatos_recebidos = df["qtd_contatos_oferecidos"].sum()
     contatos_abandonados = df["qtd_contatos_abandonados"].sum()
@@ -104,12 +110,12 @@ def realtime_inbound_cards(request):
     percentual_volume_comparativo = 0 if volume_comparativo == 0 else round((contatos_recebidos / volume_comparativo - 1) * 100, 2)
     percentual_tma_comparativo = 0 if atendidas_comparativo == 0 else round((tma_segundos / (df_db.loc[df_db["data"] == data_comparativo]["tempo_atendimento"].sum() / atendidas_comparativo) - 1) * 100, 2)
 
-    df_s = df[["nome_skill", "qtd_fila_skill", "qtd_contatos_ativos", "qtd_contatos_oferecidos", "qtd_contatos_abandonados", "qtd_agentes_disponiveis"]]
+    df_s = df[["nome_skill", "id_skill", "qtd_fila_skill", "qtd_contatos_ativos", "qtd_contatos_oferecidos", "qtd_contatos_abandonados", "qtd_agentes_disponiveis"]]
     df_c = df_db.loc[df_db["data"] == data_atual][["nome_skill", "nome_campanha", "qtd_contatos_negocios", "qtd_contatos_oferecidos", "qtd_contatos_abandonados", "qtd_contatos_target", "data_atualizacao"]]
     df_m = df_s.merge(df_c, how="outer", on="nome_skill")
     df_m["ordem_skill"] = 100
     df_m.loc[df_m["nome_skill"] == "RECEPTIVO 4004", "ordem_skill"] = 1
-    df_m.loc[df_m["nome_skill"] == "RECEPTIVO URA", "ordem_skill"] = 2
+    df_m.loc[df_m["nome_skill"] == "COBRANCA", "ordem_skill"] = 2
     df_m.loc[df_m["nome_skill"] == "RECEPTIVO 0800", "ordem_skill"] = 3
     df_m.loc[df_m["nome_skill"] == "MEU CARTAO", "ordem_skill"] = 4
     df_m.loc[df_m["nome_skill"] == "ECOMMERCE", "ordem_skill"] = 5
@@ -140,6 +146,7 @@ def realtime_inbound_cards(request):
         "agentes_logados": str(agentes_logados),
         "agentes_disponiveis": str(agentes_disponiveis),
         "agentes_pausas": str(agentes_pausas),
+        "agentes_trabalhando": str(agentes_trabalhando),
         "contatos_em_atendimento": str(contatos_em_atendimento),
         "contatos_recebidos": str(contatos_recebidos),
         "contatos_abandonados": str(contatos_abandonados),
@@ -201,7 +208,6 @@ def realtime_whatsapp(request):
     status_tickets = get_tickets_status()
     
     info_wpp = status_agents | status_tickets | status_times | tickets_agents | tickets_tags | status_bot | nps
-    # print(info_wpp)
     info_wpp["updated"] = datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
     info_wpp["percentualConversao"] = 0 if info_wpp["ticketsNegocio"] == "0" else round((int(info_wpp["ticketsNegocio"]) / (int(info_wpp["ticketsNegocio"]) + int(info_wpp["ticketsTarget"]))) * 100, 2)
     info_wpp["ticketsPerAttendant"] = round(float(info_wpp["ticketsPerAttendant"]), 2)
@@ -226,6 +232,74 @@ def realtime_whatsapp(request):
   
     data_response = {
       "data": info_wpp,
+      "updated": datetime.strftime(datetime.now(), "%d/%m/%Y %H:%M:%S")
+    }
+    return JsonResponse(data_response)
+  else:
+    return HttpResponseNotFound('Not Found')
+  
+def dashboard_credito(request):
+  if request.method == 'GET':
+    data = datetime.strftime(datetime.now() + relativedelta(days=-1), "%d/%m/%Y")
+    encerradas = PortalRealizeEncerradas.objects.filter(dataFim=data)
+    encerradas_serialized = serializers.serialize('json', encerradas)
+    encerradas_json = []
+    for x in json.loads(encerradas_serialized):
+      encerradas_json.append(x["fields"])
+
+    df = pd.json_normalize(encerradas_json)
+    df['hora'] = df['horaFim'].str[:2]
+    df['data'] = pd.to_datetime(df['dataFim'], format='%d/%m/%Y')
+    df['tempoFila'] = pd.to_datetime(df['tempoFila'], format='%H:%M:%S')
+    df['tempoAnalise'] = pd.to_datetime(df['tempoAnalise'], format='%H:%M:%S')
+    df['tempoTotal'] = pd.to_datetime(df['tempoTotal'], format='%H:%M:%S')
+    df['tempoSla'] = pd.to_datetime('00:04:00', format='%H:%M:%S')
+    df['qtdProposta'] = 1
+    # df['qtdDentroSla'] = [print(x) for x in df['tempoTotal']]
+    df = df.assign(qtdDentroSla=df.apply(lambda x: 1 if x['tempoTotal'] <= x['tempoSla'] else 0, axis=1))
+    df = df.assign(qtdConcessao=df.apply(lambda x: 1 if x['tempoTotal'] <= x['tempoSla'] else 0, axis=1))
+    df = df.assign(qtdEmprestimo=df.apply(lambda x: 1 if x['tipoAnalise'] == 'Concessão' and x['produto'] == 'Empréstimo' else 0, axis=1))
+    df = df.assign(qtdLimite=df.apply(lambda x: 1 if x['tipoAnalise'] == 'Manutenção_Limites' else 0, axis=1))
+    df = df.assign(qtdAnalise=df.apply(lambda x: 1 if x['tipoAnalise'] == 'Solicitação Análise' else 0, axis=1))
+    df = df.assign(qtdDesbloqueio=df.apply(lambda x: 1 if x['tipoAnalise'][:4] == 'DESB' else 0, axis=1))
+    df = df.assign(qtdAprovado=df.apply(lambda x: 1 if x['situacao'] == 'APROVADO' else 0, axis=1))
+    df = df.assign(qtdNegado=df.apply(lambda x: 1 if x['situacao'] == 'NEGADO' else 0, axis=1))
+    df = df.assign(qtdRetornadoLoja=df.apply(lambda x: 1 if x['situacao'] == 'RETORNADO_LOJA' else 0, axis=1))
+
+    clientes = df['cpf'].nunique()
+    propostas = df['qtdProposta'].sum()
+    hc = df['nome'].nunique()
+    nivel_servico = round(df['qtdDentroSla'].sum() / propostas * 100, 1)
+    concessao = df['qtdConcessao'].sum()
+    emprestimo = df['qtdEmprestimo'].sum()
+    limite = df['qtdLimite'].sum()
+    analise = df['qtdAnalise'].sum()
+    desbloqueio = df['qtdDesbloqueio'].sum()
+    taxa_aprovacao = round(df['qtdAprovado'].sum() / propostas * 100, 1)
+    taxa_reprovacao = round(df['qtdNegado'].sum() / propostas * 100, 1)
+    taxa_retorno_loja = round(df['qtdRetornadoLoja'].sum() / propostas * 100, 1)
+
+    ns_hora = pd.DataFrame({
+      'propostas': df.groupby('hora').apply(lambda x: x['qtdProposta'].sum()),
+      'ns': df.groupby('hora').apply(lambda x: round(x['qtdDentroSla'].sum() / x['qtdProposta'].sum() * 100, 1))
+    }).reset_index()
+    
+    data_response = {
+      "data": {
+        "clientes": str(clientes),
+        "propostas": str(propostas),
+        "hc": str(hc),
+        "nivel_servico": str(nivel_servico),
+        "concessao": str(concessao),
+        "emprestimo": str(emprestimo),
+        "limite": str(limite),
+        "analise": str(analise),
+        "desbloqueio": str(desbloqueio),
+        "taxa_aprovacao": str(taxa_aprovacao),
+        "taxa_reprovacao": str(taxa_reprovacao),
+        "taxa_retorno_loja": str(taxa_retorno_loja),
+        "json_hora": ns_hora.to_json(orient="records")
+      },
       "updated": datetime.strftime(datetime.now(), "%d/%m/%Y %H:%M:%S")
     }
     return JsonResponse(data_response)
