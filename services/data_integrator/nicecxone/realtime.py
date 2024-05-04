@@ -115,7 +115,7 @@ def get_sla_skill_summary():
     "skillName": "nome_skill",
     "campaignId": "id_campanha",
     "campaignName": "nome_campanha",
-    "serverTime": "data_atualizacao",
+    "serverTime": "data_ultima_chamada",
     "skillQueueCount": "qtd_fila_skill",
     "earliestQueueTime": "tempo_fila_skill",
     "contactsActive": "qtd_contatos_ativos",

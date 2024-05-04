@@ -15,6 +15,13 @@ def inbound(request):
   else:
     return HttpResponseNotFound('Not Found')
 
+def outbound(request):
+  if request.method == 'GET':
+    return render(request, 'outbound.html')
+  
+  else:
+    return HttpResponseNotFound('Not Found')
+
 def whatsapp(request):
   if request.method == 'GET':
     return render(request, 'whatsapp.html')

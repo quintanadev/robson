@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block site-title %}Dashboard{% endblock %}
+
+{% block page-title %}
+<img src="{% static 'images/logo-nucleo.png' %}" alt="user-image" class="avatar-lg">
+<img src="{% static 'images/logo-nucleo-sm.png' %}" alt="logo" style="width: 100px;margin-right: 0.75rem;" class="image-dark">
+<img src="{% static 'images/logo-nucleo-sm-dark.png' %}" alt="logo" style="width: 100px;margin-right: 0.75rem;" class="image-light">
+ Tempo Real | Ativo
+{% endblock %}
+
+{% block page-functions %}
+<li class="d-none d-md-inline-block me-2">
+  <a class="nav-link play-slide" href="javascript: void(0);">
+    <i class="fe-play font-16"></i>
+  </a>
+</li>
+<li class="d-none d-md-inline-block me-2">
+  <a class="nav-link next-slide" href="javascript: void(0);">
+    <i class="fe-skip-forward font-16"></i>
+  </a>
+</li>
+{% endblock %}
+
+{% block content %}
+
+{% endblock %}
+
+{% block css %}
+<!-- <link rel="stylesheet" href="{% static 'libs/animate.css/animate.min.css' %}">
+<link rel="stylesheet" href="{% static 'libs/animate.css/animate.compat.css' %}"> -->
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'libs/apexcharts/apexcharts.min.js' %}"></script>
+<script src="{% static 'js/pages/outbound.js' %}"></script>
+{% endblock %}

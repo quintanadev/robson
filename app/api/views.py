@@ -30,7 +30,7 @@ def realtime_inbound_cards(request):
     
     df_fore = df_fore.assign(intervalo_int=lambda x: x["intervalo"].str[:5].str.replace(":", "").astype(int))
 
-    data_atualizacao = df["data_atualizacao"].max()
+    data_atualizacao = df["data_ultima_chamada"].max()
     data_atual = data_atualizacao.strftime("%Y-%m-%d")
     intervalo_atual = ("0" if data_atualizacao.hour < 10 else "") + str(data_atualizacao.hour) + ":" + ("30" if data_atualizacao.minute >= 30 else "00") + ":00"
     data_comparativo = data_atualizacao + relativedelta(days=-6)
@@ -110,7 +110,7 @@ def realtime_inbound_cards(request):
     percentual_volume_comparativo = 0 if volume_comparativo == 0 else round((contatos_recebidos / volume_comparativo - 1) * 100, 2)
     percentual_tma_comparativo = 0 if atendidas_comparativo == 0 else round((tma_segundos / (df_db.loc[df_db["data"] == data_comparativo]["tempo_atendimento"].sum() / atendidas_comparativo) - 1) * 100, 2)
 
-    df_s = df[["nome_skill", "id_skill", "qtd_fila_skill", "qtd_contatos_ativos", "qtd_contatos_oferecidos", "qtd_contatos_abandonados", "qtd_agentes_disponiveis"]]
+    df_s = df[["nome_skill", "id_skill", "qtd_fila_skill", "qtd_contatos_ativos", "qtd_contatos_oferecidos", "qtd_contatos_abandonados", "qtd_agentes_disponiveis", "data_ultima_chamada"]]
     df_c = df_db.loc[df_db["data"] == data_atual][["nome_skill", "nome_campanha", "qtd_contatos_negocios", "qtd_contatos_oferecidos", "qtd_contatos_abandonados", "qtd_contatos_target", "data_atualizacao"]]
     df_m = df_s.merge(df_c, how="outer", on="nome_skill")
     df_m["ordem_skill"] = 100
@@ -132,7 +132,8 @@ def realtime_inbound_cards(request):
     df_m["per_abandono"] = round(df_m["qtd_contatos_abandonados"] / df_m["qtd_contatos_oferecidos"] * 100, 2)
     df_m["per_conversao"] = round(df_m["qtd_contatos_negocios"] / df_m["qtd_contatos_target"] * 100, 2)
     df_m.loc[df_m["nome_skill"] == "RECEPTIVO 4004", "data_atualizacao"] = df_m.loc[df_m["nome_campanha"] == "RECEPTIVO 4004"]["data_atualizacao"].max()
-    df_m["hora_ultima_chamada"] = pd.to_datetime(df_m["data_atualizacao"]).dt.strftime("%H:%M:%S").fillna("")
+    df_m["data_ultima_chamada"] = df_m["data_ultima_chamada"].fillna(df_m["data_atualizacao"])
+    df_m["hora_ultima_chamada"] = pd.to_datetime(df_m["data_ultima_chamada"]).dt.strftime("%H:%M:%S").fillna("")
     df_m = df_m.fillna(0)
     df_m = df_m.sort_values("ordem_skill")
 
@@ -240,7 +241,7 @@ def realtime_whatsapp(request):
   
 def dashboard_credito(request):
   if request.method == 'GET':
-    data = datetime.strftime(datetime.now() + relativedelta(days=-1), "%d/%m/%Y")
+    data = datetime.strftime(datetime.now() + relativedelta(days=0), "%d/%m/%Y")
     encerradas = PortalRealizeEncerradas.objects.filter(dataFim=data)
     encerradas_serialized = serializers.serialize('json', encerradas)
     encerradas_json = []

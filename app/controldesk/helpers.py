@@ -25,7 +25,7 @@ def get_skill_agents_logged(skill, headers, updated_since):
       data.append(agent_skill.values())
     df_agents = pd.DataFrame(data, columns=columns)
     df_agents = df_agents.loc[(df_agents['isActive'] == True) & (df_agents['isDialer'] == False)]
-    df_agents = df_agents.loc[df_agents['agentId'].isin([34817809, 34621269])]
+    # df_agents = df_agents.loc[df_agents['agentId'].isin([34817809, 34621269])]
     return df_agents
 
 def get_skill_agents_unassigned(skill, headers, updated_since):
@@ -70,9 +70,9 @@ def run_clear_queue(skill):
   try:
     updated_since = (datetime.now() + relativedelta(minutes=-1)).strftime('%Y-%m-%dT%H:%M:%S.000Z')
     headers = auth()
-    # skill_logged = 20890028
-    skill_logged = 18593849
-    skill = 16412178 if skill == 16412186 else 20889707 if skill == 16412187 else 18640596
+    skill_logged = 20890028
+    # skill_logged = 18593849
+    # skill = 16412178 if skill == 16412186 else 20889707 if skill == 16412187 else 18640596
     
     df_agents_logged = get_skill_agents_logged(skill_logged, headers, updated_since)
     df_agents_unassigned = get_skill_agents_unassigned(skill, headers, updated_since)

@@ -348,7 +348,7 @@ $(document).ready(async function () {
           JSON.parse(res.data.json_skills).forEach(el => {
             var valid_campaign = el['nome_campanha'] != 'RECEPTIVO 4004';
             var in_execution = $('html').data(`clear-queue-${el["id_skill"]}`);
-            if ((typeof in_execution == 'undefined' || in_execution == false) && valid_campaign && parseInt(el["qtd_fila_skill"]) > 5) {
+            if ((typeof in_execution == 'undefined' || in_execution == false) && valid_campaign && parseInt(el["qtd_fila_skill"]) > 2) {
               $('html').data(`clear-queue-${el["id_skill"]}`, true);
               fetch(`http://127.0.0.1:8000/controldesk/clearqueue/${parseInt(el["id_skill"])}/`, {
                 method: 'GET',

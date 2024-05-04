@@ -162,16 +162,14 @@ $(document).ready(async function () {
               opposite: true,
               min: 0,
               max: 100,
-              axisBorder: {
-                show: false
-              },
-              axisTicks: {
-                show: false,
-              },
               labels: {
                 show: false,
                 formatter: function (val) {
                   return val + "%";
+                },
+                style: {
+                  fontSize: '8px',
+                  colors: ["#304758"]
                 }
               }
             }]
