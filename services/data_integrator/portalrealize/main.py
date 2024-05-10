@@ -4,14 +4,17 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from dotenv import load_dotenv
 import pandas as pd
+import os
 
 # service = Service("./automations/extensions/msedgedriver.exe")
 options = webdriver.EdgeOptions()
 options.add_argument('--headless')
 
-
 def get_encerradas(db):
+  load_dotenv()
+
   # driver = webdriver.Edge(service=service, options=options)
   driver = webdriver.Edge(options=options)
   print(f"Abrindo site...")
@@ -21,10 +24,10 @@ def get_encerradas(db):
   print(f"Realizando login no sistema...")
   elem_user = driver.find_element(By.ID, "username")
   elem_user.clear()
-  elem_user.send_keys("001144622")
+  elem_user.send_keys(os.getenv('PORTALREALIZE_USER'))
   elem_pass = driver.find_element(By.ID, "password")
   elem_pass.clear()
-  elem_pass.send_keys("Renner@2031")
+  elem_pass.send_keys(os.getenv('PORTALREALIZE_PASS'))
   elem_pass.send_keys(Keys.ENTER)
 
   class element_validate(object):

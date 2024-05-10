@@ -96,7 +96,7 @@ def run_clear_queue(skill):
       api_link = 'agents/skills'
       api_url = urls()['cxone-v30'] + api_link
       requests.post(api_url, json=body, headers=headers)
-      print(f'Skill {skill} adicionado nos usuarios: {agent_list}')
+      print(f"Skill {skill} adicionado nos usuarios: {agent_list}")
       
       time.sleep(40.0)
 
@@ -104,11 +104,11 @@ def run_clear_queue(skill):
         body = {
           'skills': [{'skillId': str(skill)}]
         }
-        api_link = f'agents/{agent_id}/skills'
+        api_link = f"agents/{agent_id}/skills"
         api_url = urls()['cxone-v30'] + api_link
         requests.delete(api_url, json=body, headers=headers)
-        return {'result': 'success', 'message': f'Skill {str(skill)} adicionado aos agentes {str(agent_list).replace('[', '').replace(']', '')}'}
+        return {"result": "success", "message": f"Skill {str(skill)} adicionado aos agentes {str(agent_list).replace('[', '').replace(']', '')}"}
     else:
-      return {'result': 'info', 'message': 'Nenhum agente disponível!'}
+      return {"result": "info", "message": "Nenhum agente disponível!"}
   except Exception as e:
-    return {'result': 'danger', 'message': 'Erro ao localizar agentes disponíveis!'}
+    return {"result": "danger", "message": "Erro ao localizar agentes disponíveis!"}

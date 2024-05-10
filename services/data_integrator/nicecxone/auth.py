@@ -8,14 +8,14 @@ def auth():
 
   auth = {
     "url": "https://cxone.niceincontact.com/auth/token",
-    "username": os.getenv("NICECXONE_GLOBAL_USER"),
-    "password": os.getenv("NICECXONE_GLOBAL_PASS")
+    "username": os.getenv('NICECXONE_GLOBAL_USER'),
+    "password": os.getenv('NICECXONE_GLOBAL_PASS')
   }
 
   auth_data = {
     "grant_type": "password",
-    "username": os.getenv("NICECXONE_USER"),
-    "password": os.getenv("NICECXONE_PASS")
+    "username": os.getenv('NICECXONE_USER'),
+    "password": os.getenv('NICECXONE_PASS')
   }
 
   headers = {

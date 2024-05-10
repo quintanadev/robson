@@ -1,9 +1,13 @@
 from databricks import sql
+from dotenv import load_dotenv
+import os
 
 def auth():
+  load_dotenv()
+  
   databricks = sql.connect(
-    server_hostname="adb-6621577254898039.19.azuredatabricks.net",
-    http_path="/sql/1.0/warehouses/0402b5a1921690d5",
+    server_hostname=os.getenv('DATABRICKS_HOSTNAME'),
+    http_path=os.getenv('DATABRICKS_HTTPPATH'),
     auth_type="databricks-oauth"
   )
   cursor = databricks.cursor()

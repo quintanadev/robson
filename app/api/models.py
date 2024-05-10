@@ -268,3 +268,49 @@ class DatabricksAnaliticoNegocio(models.Model):
 
   def __str__(self) -> str:
     return f"{self.cpf} - {self.tipoNegocio}"
+  
+
+class A5ReportChamada(models.Model):
+  id = models.IntegerField(primary_key=True)
+  dnis = models.CharField(max_length=20, null=True)
+  ucid = models.CharField(max_length=100, null=True)
+  ani = models.CharField(max_length=20, null=True)
+  uui = models.CharField(max_length=100, null=True)
+  inicioChamada = models.CharField(max_length=20, null=True)
+  terminoChamada = models.CharField(max_length=20, null=True)
+  inicioEnfileiramento = models.CharField(max_length=20, null=True)
+  inicioAtendimento = models.CharField(max_length=20, null=True)
+  finalizacao_id = models.IntegerField(null=True)
+  finalizacao_descricao = models.CharField(max_length=100, null=True)
+  aplicacao_id = models.IntegerField(null=True)
+  aplicacao_descricao = models.CharField(max_length=100, null=True)
+  ultimaInteracao = models.CharField(max_length=100, null=True)
+  transferencia = models.CharField(max_length=100, null=True)
+  canalEntrada = models.CharField(max_length=100, null=True)
+  documento = models.CharField(max_length=100, null=True)
+  atendido = models.CharField(max_length=100, null=True)
+  callback = models.CharField(max_length=100, null=True)
+  campo1 = models.CharField(max_length=100, null=True)
+  campo2 = models.CharField(max_length=100, null=True)
+  campo3 = models.CharField(max_length=100, null=True)
+  campo4 = models.CharField(max_length=100, null=True)
+  campo5 = models.CharField(max_length=100, null=True)
+  campo6 = models.CharField(max_length=100, null=True)
+  campo7 = models.CharField(max_length=100, null=True)
+  campo8 = models.CharField(max_length=100, null=True)
+  campo9 = models.CharField(max_length=100, null=True)
+  campo10 = models.CharField(max_length=100, null=True)
+  campo11 = models.CharField(max_length=100, null=True)
+  campo12 = models.CharField(max_length=100, null=True)
+  campo13 = models.CharField(max_length=100, null=True)
+  campo14 = models.CharField(max_length=100, null=True)
+  campo15 = models.CharField(max_length=100, null=True)
+  nomeAgente = models.CharField(max_length=100, null=True)
+  nomeCliente = models.CharField(max_length=100, null=True)
+  empresa_id = models.IntegerField(null=True)
+  empresa_descricao = models.CharField(max_length=100, null=True)
+  jornadaIc = models.CharField(max_length=4000, null=True)
+  jornadaTempo = models.CharField(max_length=4000, null=True)
+  
+  def __str__(self) -> str:
+    return self.id

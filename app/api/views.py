@@ -138,8 +138,8 @@ def realtime_inbound_cards(request):
     df_m.loc[df_m["nome_skill"] == "RECEPTIVO 4004", "data_atualizacao"] = df_m.loc[df_m["nome_campanha"] == "RECEPTIVO 4004"]["data_atualizacao"].max()
     df_m["data_ultima_chamada"] = df_m["data_ultima_chamada"].fillna(df_m["data_atualizacao"])
     df_m["hora_ultima_chamada"] = pd.to_datetime(df_m["data_ultima_chamada"]).dt.strftime("%H:%M:%S").fillna("")
-    df_m = df_m.fillna(0)
-    df_m = df_m.sort_values("ordem_skill")
+    df_m[['per_abandono', 'per_conversao']] = df_m[['per_abandono', 'per_conversao']].fillna(0)
+    df_m.sort_values("ordem_skill", inplace=True)
 
     data_response = {
       "data": {

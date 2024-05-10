@@ -8,11 +8,11 @@ def auth():
     "url": "https://renner.http.msging.net/commands",
     "auth-human": {
       "Content-Type": "application/json",
-      "Authorization": f"Key {os.getenv("TAKEBLIP_TOKEN_HUMAN")}"
+      "Authorization": f"Key {os.getenv('TAKEBLIP_TOKEN_HUMAN')}"
     },
     "auth-router": {
       "Content-Type": "application/json",
-      "Authorization": f"Key {os.getenv("TAKEBLIP_TOKEN_ROUTER")}"
+      "Authorization": f"Key {os.getenv('TAKEBLIP_TOKEN_ROUTER')}"
     }
   }
 
