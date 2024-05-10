@@ -1,8 +1,12 @@
 from django.http import JsonResponse, HttpResponseNotFound
+from django.views.decorators.csrf import csrf_exempt
 from django.core import serializers
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+from pathlib import Path
 import pandas as pd
+import requests
+import folium
 import json
 
 from services.data_integrator.nicecxone.realtime import get_sla_skill_summary, get_forecast, get_dados_receptivo, get_dispositions
@@ -304,5 +308,149 @@ def dashboard_credito(request):
       "updated": datetime.strftime(datetime.now(), "%d/%m/%Y %H:%M:%S")
     }
     return JsonResponse(data_response)
+  else:
+    return HttpResponseNotFound('Not Found')
+
+def realtime_outbound_dashboard(request):
+  if request.method == 'GET':
+
+    data = datetime.strftime(datetime.now() + relativedelta(days=0), "%d/%m/%Y")
+    mailing = f"""
+      select *
+      from 'api_databricksanaliticomailing'
+      where dataMailing = '{data}'
+    """
+
+    data_response = {
+      "data": {
+        "teste": "ok"
+      },
+      "updated": datetime.strftime(datetime.now(), "%d/%m/%Y %H:%M:%S")
+    }
+    return JsonResponse(data_response)
+  else:
+    return HttpResponseNotFound('Not Found')
+
+def realtime_users_dashboard(request):
+  if request.method == 'GET':
+
+    data = datetime.strftime(datetime.now() + relativedelta(days=0), "%d/%m/%Y")
+    mailing = f"""
+      select
+        *
+      from 'api_databricksanaliticomailing'
+      where dataMailing = '{data}'
+    """
+    
+    data_response = {
+      "data": {
+        "teste": "ok"
+      },
+      "updated": datetime.strftime(datetime.now(), "%d/%m/%Y %H:%M:%S")
+    }
+    return JsonResponse(data_response)
+  else:
+    return HttpResponseNotFound('Not Found')
+
+@csrf_exempt
+def users_map(request):
+  if request.method == 'POST':
+    body = json.loads(request.body.decode('utf-8'))
+    impacto = body['impacto']
+    operacao = body['operacao']
+    turno = body['turno']
+    computador = body['computador']
+
+    file_path = Path.cwd() / 'lista_funcionarios.csv'
+    funcionarios = pd.read_csv(file_path, sep=";", dtype=str, index_col=False)
+    if impacto != 'TODOS':
+      funcionarios = funcionarios.loc[funcionarios['impacto'] == impacto]
+    if operacao != 'TODOS':
+      funcionarios = funcionarios.loc[funcionarios['operacao'] == operacao]
+    if turno != 'TODOS':
+      funcionarios = funcionarios.loc[funcionarios['turno'] == turno]
+    if computador != 'TODOS':
+      funcionarios = funcionarios.loc[funcionarios['imobilizado'].isnull() if computador == 'NAO' else ~funcionarios['imobilizado'].isnull()]
+
+    funcionarios_pesquisa_geo = funcionarios.loc[funcionarios['localizacao'].isnull()]
+    if len(funcionarios_pesquisa_geo) > 0:
+      funcional = []
+      localizacao = []
+      latitude = []
+      longitude = []
+
+      for _, f in funcionarios_pesquisa_geo.iterrows():
+        pesquisa = f"Rua {f['endereco']}, {f['bairro']}, {f['cidade']}, RS, {f['cep']}"
+        pesquisa = pesquisa.replace(" ", "+")
+        pesquisa = pesquisa.replace(",", "%2C")
+        endereco = requests.get(f"https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/find?f=json&text={pesquisa}&maxLocations=1", verify=False)
+        endereco_json = endereco.json()
+        funcional.append(f['funcional'])
+        localizacao.append(endereco_json['locations'][0]['name'])
+        latitude.append(endereco_json['locations'][0]['feature']['geometry']['y'])
+        longitude.append(endereco_json['locations'][0]['feature']['geometry']['x'])
+      
+      df_localizacao = pd.DataFrame(data={'funcional': funcional, 'loc': localizacao, 'lat': latitude, 'lon': longitude}, dtype=str)
+      funcionarios = funcionarios.merge(df_localizacao, how="left", on=['funcional'])
+      funcionarios.loc[funcionarios['latitude'].isnull(), 'latitude'] = funcionarios.loc[funcionarios['latitude'].isnull()]['lat']
+      funcionarios.loc[funcionarios['longitude'].isnull(), 'longitude'] = funcionarios.loc[funcionarios['longitude'].isnull()]['lon']
+      funcionarios.loc[funcionarios['localizacao'].isnull(), 'localizacao'] = funcionarios.loc[funcionarios['localizacao'].isnull()]['loc']
+      funcionarios.drop(columns=['lat', 'lon', 'loc'], axis=1, inplace=True)
+      funcionarios.to_csv(file_path, sep=";")
+      funcionarios.fillna('', inplace=True)
+
+    cores_situacao = {
+      "SEM_IMPACTO": "green",
+      "ISOLAMENTO": "blue",
+      "RISCO": "red",
+    }
+
+    sem_impacto = funcionarios.loc[funcionarios['impacto'] == 'SEM_IMPACTO']['impacto'].count()
+    isolamento = funcionarios.loc[funcionarios['impacto'] == 'ISOLAMENTO']['impacto'].count()
+    risco = funcionarios.loc[funcionarios['impacto'] == 'RISCO']['impacto'].count()
+    legenda_html = f"""
+      <div style="position:fixed;
+        bottom: 50px; 
+        left: 50px; 
+        width: 260px; 
+        height: 90px;
+        z-index: 9999;
+        font-size: 15px;">
+        &nbsp;<b>Legenda:</b><br>
+        &nbsp;<i class="fa fa-circle fa-1x" style="color:#34B75F"></i>&nbsp;Sem Impactos: {sem_impacto}<br>
+        &nbsp;<i class="fa fa-circle fa-1x" style="color:#3193CC"></i>&nbsp;Em Situação de Isolamento: {isolamento}<br>
+        &nbsp;<i class="fa fa-circle fa-1x" style="color:#FF5733"></i>&nbsp;Sua Residência Foi Afetada: {risco}<br>
+      </div>
+    """
+
+    attr = "Tiles &copy;"
+    tiles = "Cartodb Positron"
+
+    f = folium.Figure(height=680)
+    m = folium.Map(location=[-29.9949419, -51.193631], attr=attr, tiles=tiles, zoom_start=11).add_to(f)
+    for _, local in funcionarios.iterrows():
+      popup_html = f"""
+        <h3>({local['funcional']}) {local['nome']}</h3>
+        <label>Líder: {local['nomeLider']}</label><br>
+        <label>Operação: {local['operacao']}</label><br>
+        <label>Turno: {local['turno']}</label><br>
+        <label>Home Office: {local['homeOffice']}</label><br>
+        <label>Afetado Pela Chuva: {local['afetadoChuva']}</label><br>
+        <label>Imobilizado: {local['imobilizado']}</label><br>
+        <label>Observação: {'' if not local['observacao'] else local['observacao']}</label><br>
+        <label>Localização: {local['endereco']}, {local['bairro']} - {local['cidade']} - {local['cep']}</label><br>
+      """
+      popup_iframe = folium.IFrame(html=popup_html, width=300, height=300)
+      popup = folium.Popup(popup_iframe, max_width=600)
+      folium.Marker(
+        location=[local['latitude'], local['longitude']],
+        popup=popup,
+        icon=folium.Icon(color=cores_situacao[local['impacto']]),
+        tooltip=local['nome']
+      ).add_to(m)
+    m.get_root().html.add_child(folium.Element(legenda_html))
+
+    m = m._repr_html_()
+    return JsonResponse({"mapa": m})
   else:
     return HttpResponseNotFound('Not Found')

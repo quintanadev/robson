@@ -62,7 +62,6 @@ def get_agents_status(headers, updated_since):
       columns = agent_skill.keys()
       data.append(agent_skill.values())
     df_agents = pd.DataFrame(data, columns=columns)
-    df_agents = df_agents.loc[(df_agents['isActive'] == True) & (df_agents['agentStateId'] == 1) & (df_agents['isACW'] == False) & (df_agents['isOutbound'] == False) & (df_agents['contactId'].isnull())]
     # df_agents = df_agents.loc[df_agents['agentId'].isin([34817809, 34621269])]
     return df_agents
 
@@ -77,6 +76,7 @@ def run_clear_queue(skill):
     df_agents_logged = get_skill_agents_logged(skill_logged, headers, updated_since)
     df_agents_unassigned = get_skill_agents_unassigned(skill, headers, updated_since)
     df_agents_status = get_agents_status(headers, updated_since)
+    df_agents_status = df_agents_status.loc[(df_agents_status['isActive'] == True) & (df_agents_status['agentStateId'] == 1) & (df_agents_status['isACW'] == False) & (df_agents_status['isOutbound'] == False) & (df_agents_status['contactId'].isnull())]
 
     df = df_agents_logged.merge(df_agents_unassigned, how='inner', on=['agentId'], validate='one_to_one')
     df = df.merge(df_agents_status, how='inner', on=['agentId'], validate='one_to_one')

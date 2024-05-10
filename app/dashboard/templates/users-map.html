@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block site-title %}Dashboard{% endblock %}
+
+{% block page-title %}
+<img src="{% static 'images/logo-nucleo.png' %}" alt="user-image" class="avatar-lg">
+<img src="{% static 'images/logo-nucleo-sm.png' %}" alt="logo" style="width: 100px;margin-right: 0.75rem;"
+  class="image-dark">
+<img src="{% static 'images/logo-nucleo-sm-dark.png' %}" alt="logo" style="width: 100px;margin-right: 0.75rem;"
+  class="image-light">
+Mapa da Situação dos Colaboradores
+{% endblock %}
+
+{% block page-functions %}
+<li class="d-none d-md-inline-block me-2">
+  <a class="nav-link filter-impacto" data-impacto="TODOS" href="javascript: void(0);">
+    <i class="fe-map-pin font-16"></i>
+  </a>
+</li>
+<li class="d-none d-md-inline-block me-2">
+  <a class="nav-link filter-impacto" data-impacto="SEM_IMPACTO" href="javascript: void(0);">
+    <i class="fe-check-circle font-16 text-success"></i>
+  </a>
+</li>
+<li class="d-none d-md-inline-block me-2">
+  <a class="nav-link filter-impacto" data-impacto="ISOLAMENTO" href="javascript: void(0);">
+    <i class="fe-stop-circle font-16 text-info"></i>
+  </a>
+</li>
+<li class="d-none d-md-inline-block me-4">
+  <a class="nav-link filter-impacto" data-impacto="RISCO" href="javascript: void(0);">
+    <i class="fe-alert-circle font-16 text-danger"></i>
+  </a>
+</li>
+<li class="d-none d-md-inline-block me-2">
+  <a class="nav-link open-filters" href="javascript: void(0);" data-bs-toggle="modal" data-bs-target="#filters-modal">
+    <i class="fe-filter font-16"></i>
+  </a>
+</li>
+{% endblock %}
+
+{% block content %}
+<input type="hidden" id="impacto" name="impacto" value="TODOS">
+<div class="row">
+  <div class="col-12" id="users-map">
+  </div>
+</div>
+
+<!-- Signup modal content -->
+<div id="filters-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+        <form class="px-3" action="#">
+          <div class="mb-3">
+            <label for="operacao" class="form-label">Operação</label>
+            <select class="form-select form-filter" name="operacao" id="operacao">
+              <option value="TODOS" selected>Todos</option>
+              <option value="COBRANÇA">Cobrança</option>
+              <option value="CREDITO">Crédito</option>
+              <option value="QUALIDADE">Qualidade</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="turno" class="form-label">Turno</label>
+            <select class="form-select form-filter" name="turno" id="turno">
+              <option value="TODOS" selected>Todos</option>
+              <option value="MANHA">Manhã</option>
+              <option value="TARDE">Tarde</option>
+              <option value="INTEGRAL">Integral</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="computador" class="form-label">Com Computador?</label>
+            <select class="form-select form-filter" name="computador" id="computador">
+              <option value="TODOS" selected>Todos</option>
+              <option value="SIM">Sim</option>
+              <option value="NAO">Não</option>
+            </select>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Fechar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block css %}
+<!-- <link rel="stylesheet" href="{% static 'libs/animate.css/animate.min.css' %}">
+<link rel="stylesheet" href="{% static 'libs/animate.css/animate.compat.css' %}"> -->
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'js/pages/users-map.js' %}"></script>
+{% endblock %}

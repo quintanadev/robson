@@ -72,6 +72,59 @@ def mailing(db):
 
   return True
 
+def analitico_mailing(db):
+  table_name = 'api_databricksanaliticomailing'
+  query = f"""
+    SELECT MAX(dataMailing) AS dataMailing
+    FROM '{table_name}'
+  """
+  date_updated = db.execute(query).fetchone()['dataMailing']
+  print(f'Data do mailing no banco: {date_updated}')
+  if date_updated and date_updated == date.today().strftime('%Y-%m-%d'):
+    pass
+  else:
+    query_databricks = f"""
+      select
+        to_date(DatGeracaoArquivo, 'yyyyMMdd') as dataMailing,
+        DesRegis as cpf,
+        DigitoRandomico as digitoRandomico,
+        replace(replace(replace(NomeMailingNice, 'COB_PILOTO_', ''), 'COB_CONTROLE_', ''), concat('_', DatGeracaoArquivo), '') as mailing,
+        FaixaAtraso as faixaAtraso,
+        Familia as familia,
+        Segmento as segmento,
+        GrupoOperacao as grupoOperacao,
+        case MomentoAtraso
+          when 0 then 'ND'
+          when 1 then 'FPD'
+          when 2 then 'FTD'
+          when 3 then 'RECORRENTE'
+          else 'ND' end as momentoAtraso,
+        case Propensao
+          when 0 then '0. ND'
+          when 1 then '1. MINIMA'
+          when 2 then '2. BAIXA'
+          when 3 then '3. MEDIA'
+          when 4 then '4. ALTA'
+          when 5 then '5. MAXIMA'
+          else '0. ND' end as propensao,
+        StatusTratador as statusTratador,
+        Idade as idade,
+        Cidade as cidade,
+        Estado as estado,
+        to_date(DatNascimento, 'yyyyMMdd') as dataNascimento,
+        nvl(cast(IndicTexto8 as decimal(18,2)), 0.0)+nvl(cast(IndicTexto9 as decimal(18,2)), 0.0) as saldoCadoc
+      from bronze_corporativo_recupera.mailinglayoutolostemp
+    """
+    databricks = auth()
+    databricks.execute(query_databricks)
+    data_result = databricks.fetchall()
+    df_databricks = pd.DataFrame(data_result, columns=data_result[0].asDict().keys(), dtype=str)
+    df_databricks.to_sql(table_name, db, if_exists='append', index=False)
+    db.commit()
+    databricks.close()
+    print('Mailing gravado no banco!')
+  return True
+
 def negocios(db):
   table_name = 'api_databricksanaliticonegocio'
   query = f"""

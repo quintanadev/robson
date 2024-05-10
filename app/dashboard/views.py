@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponseNotFound
+import folium.map
 
 def index(request):
   if request.method == 'GET':
@@ -29,9 +30,23 @@ def whatsapp(request):
   else:
     return HttpResponseNotFound('Not Found')
 
+def users(request):
+  if request.method == 'GET':
+    return render(request, 'users.html')
+  
+  else:
+    return HttpResponseNotFound('Not Found')
+
 def credito(request):
   if request.method == 'GET':
     return render(request, 'credito.html')
+  
+  else:
+    return HttpResponseNotFound('Not Found')
+
+def users_map(request):
+  if request.method == 'GET':
+    return render(request, 'users-map.html')
   
   else:
     return HttpResponseNotFound('Not Found')

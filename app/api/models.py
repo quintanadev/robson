@@ -65,25 +65,6 @@ class NiceAgent(models.Model):
   def __str__(self) -> str:
     return self.userName
 
-
-class Mailing(models.Model):
-  dataMailing = models.DateField()
-  cpf = models.CharField(max_length=11)
-  mailing = models.CharField(max_length=100, null=True)
-  grupoCarteira = models.CharField(max_length=50, null=True)
-  faixaAtraso = models.CharField(max_length=50, null=True)
-  familia = models.CharField(max_length=50, null=True)
-  segmento = models.CharField(max_length=50, null=True)
-  grupoOperacao = models.CharField(max_length=50, null=True)
-  momentoAtraso = models.CharField(max_length=50, null=True)
-  propensao = models.CharField(max_length=50, null=True)
-  statusTratador = models.CharField(max_length=50, null=True)
-  valorAtraso = models.DecimalField(max_digits=12, decimal_places=2, null=True)
-  valorSaldo = models.DecimalField(max_digits=12, decimal_places=2, null=True)
-
-  def __str__(self) -> str:
-    return self.cpf
-
 class NiceContact(models.Model):
   abandoned = models.CharField(max_length=100, null=True)
   abandonSeconds = models.CharField(max_length=100, null=True)
@@ -232,6 +213,27 @@ class DatabricksFatoMailing(models.Model):
 
   def __str__(self) -> str:
     return f"{self.dataMailing} - {self.segmento} - {self.familia} - {self.faixaAtraso}"
+
+class DatabricksAnaliticoMailing(models.Model):
+  dataMailing = models.DateField(null=True)
+  cpf = models.CharField(max_length=11, null=True)
+  digitoRandomico = models.CharField(max_length=2, null=True)
+  mailing = models.CharField(max_length=100, null=True)
+  faixaAtraso = models.CharField(max_length=50, null=True)
+  familia = models.CharField(max_length=50, null=True)
+  segmento = models.CharField(max_length=50, null=True)
+  grupoOperacao = models.CharField(max_length=50, null=True)
+  momentoAtraso = models.CharField(max_length=50, null=True)
+  propensao = models.CharField(max_length=50, null=True)
+  statusTratador = models.CharField(max_length=50, null=True)
+  idade = models.IntegerField(null=True)
+  cidade = models.CharField(max_length=100, null=True)
+  estado = models.CharField(max_length=2, null=True)
+  dataNascimento = models.DateField(null=True)
+  saldoCadoc = models.DecimalField(max_digits=12, decimal_places=2, null=True)
+
+  def __str__(self) -> str:
+    return self.cpf
 
 class DatabricksAnaliticoNegocio(models.Model):
   periodo = models.IntegerField(null=True)

@@ -2,7 +2,7 @@ $(document).ready(async function () {
 
   (outbound_update = async () => {
     var next_update = 120000;
-    await fetch('http://127.0.0.1:8000/api/outbound/dashboard/', {
+    await fetch('http://127.0.0.1:8000/api/users/dashboard/', {
       method: 'GET',
     }).then((result) => {
       result.json().then((res) => {
