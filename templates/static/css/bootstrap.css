@@ -136,6 +136,12 @@ File: Bootstrap Css File
   --ct-breakpoint-lg: 992px;
   --ct-breakpoint-xl: 1200px;
   --ct-breakpoint-xxl: 1400px;
+  --ct-primary-bg-low: #e0def8;
+  --ct-secondary-bg-low: #f3f7f9;
+  --ct-success-bg-low: #d1f2eb;
+  --ct-info-bg-low: #d9f2fa;
+  --ct-warning-bg-low: #fdf1db;
+  --ct-danger-bg-low: #fcdde2;
 }
 
 [data-bs-theme=dark] {
@@ -186,6 +192,12 @@ File: Bootstrap Css File
   --ct-code-color: #faaaca;
   --ct-border-color: #424e5a;
   --ct-border-color-translucent: rgba(255, 255, 255, 0.15);
+  --ct-primary-bg-low: #e0def8;
+  --ct-secondary-bg-low: #f3f7f9;
+  --ct-success-bg-low: #d1f2eb;
+  --ct-info-bg-low: #d9f2fa;
+  --ct-warning-bg-low: #fdf1db;
+  --ct-danger-bg-low: #fcdde2;
 }
 
 *,
@@ -9719,7 +9731,23 @@ textarea.form-control-lg {
   background-color: rgba(var(--ct-body-bg-rgb), var(--ct-bg-opacity)) !important;
 }
 
-.bg-content{
+.bg-success-low {
+  background-color: var(--ct-success-bg-low) !important;
+}
+
+.bg-info-low {
+  background-color: var(--ct-info-bg-low) !important;
+}
+
+.bg-warning-low {
+  background-color: var(--ct-warning-bg-low) !important;
+}
+
+.bg-danger-low {
+  background-color: var(--ct-danger-bg-low) !important;
+}
+
+.bg-content {
   background-color: var(--ct-body-bg) !important;
 }
 

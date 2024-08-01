@@ -30,9 +30,9 @@ def whatsapp(request):
   else:
     return HttpResponseNotFound('Not Found')
 
-def users(request):
+def users_online(request):
   if request.method == 'GET':
-    return render(request, 'users.html')
+    return render(request, 'users-online.html')
   
   else:
     return HttpResponseNotFound('Not Found')
@@ -47,6 +47,13 @@ def credito(request):
 def users_map(request):
   if request.method == 'GET':
     return render(request, 'users-map.html')
+  
+  else:
+    return HttpResponseNotFound('Not Found')
+
+def maps(request):
+  if request.method == 'GET':
+    return render(request, 'maps.html')
   
   else:
     return HttpResponseNotFound('Not Found')

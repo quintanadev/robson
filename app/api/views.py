@@ -10,8 +10,9 @@ import folium
 import json
 
 from services.data_integrator.nicecxone.realtime import get_sla_skill_summary, get_forecast, get_dados_receptivo, get_dispositions
-from services.data_integrator.takeblip.realtime import get_tickets_times, get_tickets_agents, get_tickets_tags, get_contacts_bot, get_nps, get_agents_status, get_tickets_status
+from services.data_integrator.takeblip.realtime import get_tickets_times, get_tickets_agents, get_tickets_tags, get_contacts_bot, get_nps, get_agents_status_blip, get_tickets_status_blip
 
+from app.controldesk.helpers import get_agents_status, get_skill_agents_logged
 from .models import PortalRealizeEncerradas
 
 def realtime_inbound_cards(request):
@@ -209,8 +210,8 @@ def realtime_whatsapp(request):
     tickets_tags = get_tickets_tags()
     status_bot = get_contacts_bot()
     nps = get_nps()
-    status_agents = get_agents_status()
-    status_tickets = get_tickets_status()
+    status_agents = get_agents_status_blip()
+    status_tickets = get_tickets_status_blip()
     
     info_wpp = status_agents | status_tickets | status_times | tickets_agents | tickets_tags | status_bot | nps
     info_wpp["updated"] = datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
@@ -331,23 +332,46 @@ def realtime_outbound_dashboard(request):
   else:
     return HttpResponseNotFound('Not Found')
 
+@csrf_exempt
 def realtime_users_dashboard(request):
   if request.method == 'GET':
-
-    data = datetime.strftime(datetime.now() + relativedelta(days=0), "%d/%m/%Y")
-    mailing = f"""
-      select
-        *
-      from 'api_databricksanaliticomailing'
-      where dataMailing = '{data}'
-    """
+    def second_to_time(s):
+      h,s = divmod(int(s), 3600)
+      m,s = divmod(s, 60)
+      return f"{h:02}:{m:02}:{s:02}"
     
-    data_response = {
-      "data": {
-        "teste": "ok"
-      },
-      "updated": datetime.strftime(datetime.now(), "%d/%m/%Y %H:%M:%S")
-    }
+    updated_since = (datetime.now() + relativedelta(minutes=-1)).strftime('%Y-%m-%dT%H:%M:%S.000Z')
+    status = get_agents_status(updated_since)
+    
+    try:
+      status = status.loc[(status['isActive'] == True) & (status['agentStateName'] != 'LoggedOut')]
+      status['lider'] = status['teamName'].str.split().str[0].str.title() + ' ' + status['teamName'].str.split().str[-1].str.title()
+      
+      status.loc[status['lider'].isin([
+        'Franciele Amaral', 'Roberta Santana', 'Jessica Moraes', 'Filipe Silva',
+        'Laciele Freitas', 'Clovis Lopes', 'Joao Gomes']), 'operacao'] = 'Cobrança'
+      status.loc[status['lider'].isin(['Maurilio Abreu', 'Gabrielly Silva']), 'operacao'] = 'Crédito'
+      status.loc[status['lider'].isin(['Gabriel Oliveira', 'Tiago Moreira']), 'operacao'] = 'Qualidade'
+      status.loc[status['lider'].isin(['Gislaine Silva', 'Camilla Justo', 'Anderson Martins', 'Moises Mascarenhas']), 'operacao'] = 'Apoio'
+      status = status.loc[(~status['operacao'].isnull()) & (status['operacao'] != 'nan')]
+      status['status'] = ''
+      status.loc[status['agentStateName'] == 'Available', 'status'] = 'Disponível'
+      status.loc[status['agentStateName'].isin(['InboundContact', 'OutboundContact']), 'status'] = 'Falando'
+      status.loc[(status['agentStateName'] == 'Unavailable') & (~status['outStateDescription'].isnull()), 'status'] = status.loc[(status['agentStateName'] == 'Unavailable') & (~status['outStateDescription'].isnull())]['outStateDescription'].str.title()
+      status.loc[(status['agentStateName'] == 'Unavailable') & (status['outStateDescription'].isnull()), 'status'] = 'Indisponível'
+
+      status['id'] = status['agentId']
+      status['nome'] = status['firstName'].str.title() + ' ' + status['lastName'].str.split().str[-1].str.title()
+      status['agora'] = datetime.now() + timedelta(hours=3)
+      status['segundos'] = (status['agora'] - pd.to_datetime(status['lastUpdateTime'], format='%Y-%m-%dT%H:%M:%S.%fZ')).dt.total_seconds()
+      status['tempo'] = [second_to_time(s) for s in status['segundos']]
+      status = status[['id', 'nome', 'lider', 'status', 'tempo', 'skillName', 'operacao']].reset_index(drop=True)
+      status = status.rename(columns={'skillName': 'skill'})
+      status.sort_values('tempo', ascending=False, inplace=True)
+    except:
+      data_response = {"data": {}}
+    else:
+      data_response = {"data": json.loads(status.to_json(orient="records")),}
     return JsonResponse(data_response)
   else:
     return HttpResponseNotFound('Not Found')

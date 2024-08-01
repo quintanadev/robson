@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block site-title %}Dashboard{% endblock %}
+
+{% block page-title %}
+Tempo Real | Status dos Agentes
+{% endblock %}
+
+{% block page-functions %}{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-8">
+    <div class="card">
+      <div class="card-body">
+        <table id="table-status-online" class="table dt-responsive nowrap w-100">
+          <thead>
+            <tr>
+              <th>#ID</th>
+              <th>Nome</th>
+              <th>Líder</th>
+              <th>Status</th>
+              <th>Tempo</th>
+              <th>Skill</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-4">
+    <div class="row">
+      <div class="col-6">
+        <div class="card bg-success-low text-secondary" id="card-disponivel" style="cursor: pointer;">
+          <div class="card-body">
+            Disponíveis: <span id="hc-disponivel">0</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="card bg-info-low text-secondary" id="card-falando" style="cursor: pointer;">
+          <div class="card-body">
+            Falando ou Tabulando: <span id="hc-falando">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-6">
+        <div class="card bg-danger-low text-secondary" id="card-pausa" style="cursor: pointer;">
+          <div class="card-body">
+            Em Pausa: <span id="hc-pausa">0</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="card bg-warning-low text-secondary" id="card-indisponivel" style="cursor: pointer;">
+          <div class="card-body">
+            Indisponíveis: <span id="hc-indisponivel">0</span>
+          </div>
+        </div>
+      </div>
+      <input type="hidden" class="d-none" name="filtro-status" id="filtro-status" value="todos">
+    </div>
+    <div class="row">
+      <div class="col-lg-6">
+        <div class="mb-3">
+          <label for="operacao" class="form-label">Operação</label>
+          <select class="form-control" id="operacao" name="operacao">
+            <option value="Todos" selected>Todos</option>
+            <option value="Cobrança">Cobrança</option>
+            <option value="Crédito">Crédito</option>
+            <option value="Qualidade">Qualidade</option>
+          </select>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="mb-3">
+          <label for="lider" class="form-label">Líder</label>
+          <select class="form-control" id="lider" name="lider">
+            <option value="Todos" data-display="Select">Todos</option>
+            <option value="Franciele Amaral">Franciele Amaral</option>
+            <option value="Roberta Santana">Roberta Santana</option>
+            <option value="Jessica Moraes">Jessica Moraes</option>
+            <option value="Filipe Silva">Filipe Silva</option>
+            <option value="Laciele Freitas">Laciele Freitas</option>
+            <option value="Clovis Lopes">Clovis Lopes</option>
+            <option value="Joao Gomes">Joao Gomes</option>
+            <option value="Maurilio Abreu">Maurilio Abreu</option>
+            <option value="Gabrielly Silva">Gabrielly Silva</option>
+            <option value="Gabriel Oliveira">Gabriel Oliveira</option>
+            <option value="Tiago Moreira">Tiago Moreira</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6">
+        <div class="mb-3">
+          <label for="operacao" class="form-label">Mostrar Pausas</label>
+          <div class="switchery-demo">
+            <input type="checkbox" checked data-plugin="switchery" data-color="#fcdde2" id="pausas" name="pausas"/>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block css %}
+<!-- <link rel="stylesheet" href="{% static 'libs/animate.css/animate.min.css' %}">
+<link rel="stylesheet" href="{% static 'libs/animate.css/animate.compat.css' %}"> -->
+<link rel="stylesheet" href="{% static 'libs/datatables.net-bs5/css/dataTables.bootstrap5.min.css' %}">
+<link rel="stylesheet" href="{% static 'libs/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css' %}">
+<link rel="stylesheet" href="{% static 'libs/datatables.net-buttons-bs5/css/buttons.bootstrap5.min.css' %}">
+<link rel="stylesheet" href="{% static 'libs/datatables.net-select-bs5/css/select.bootstrap5.min.css' %}">
+<link rel="stylesheet" href="{% static 'libs/mohithg-switchery/switchery.min.css' %}">
+{% endblock %}
+
+{% block script %}
+<!-- <script src="{% static 'libs/apexcharts/apexcharts.min.js' %}"></script> -->
+<script src="{% static 'libs/datatables.net/i18n/ptBR.js' %}"></script>
+<script src="{% static 'libs/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'libs/datatables.net-bs5/js/dataTables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'libs/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'libs/datatables.net-responsive-bs5/js/responsive.bootstrap5.min.js' %}"></script>
+<script src="{% static 'libs/datatables.net-buttons/js/dataTables.buttons.min.js' %}"></script>
+<script src="{% static 'libs/datatables.net-buttons-bs5/js/buttons.bootstrap5.min.js' %}"></script>
+<script src="{% static 'libs/datatables.net-buttons/js/buttons.html5.min.js' %}"></script>
+<script src="{% static 'libs/datatables.net-buttons/js/buttons.flash.min.js' %}"></script>
+<script src="{% static 'libs/datatables.net-buttons/js/buttons.print.min.js' %}"></script>
+<script src="{% static 'libs/datatables.net-keytable/js/dataTables.keyTable.min.js' %}"></script>
+<script src="{% static 'libs/datatables.net-select/js/dataTables.select.min.js' %}"></script>
+<script src="{% static 'libs/mohithg-switchery/switchery.min.js' %}"></script>
+<script src="{% static 'js/pages/users-online.js' %}"></script>
+{% endblock %}

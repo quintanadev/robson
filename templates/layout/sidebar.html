@@ -20,21 +20,30 @@
     </a>
   </li>
   <li class="menu-item">
-    <a href="{% url 'dashboard-users' %}" class="menu-link">
-      <span class="menu-icon"><i data-feather="users"></i></span>
-      <span class="menu-text"> Agentes </span>
-    </a>
-  </li>
-  <li class="menu-item">
     <a href="{% url 'dashboard-credito' %}" class="menu-link">
       <span class="menu-icon"><i data-feather="credit-card"></i></span>
       <span class="menu-text"> Crédito </span>
     </a>
   </li>
   <li class="menu-item">
+    <a href="{% url 'users-online' %}" class="menu-link">
+      <span class="menu-icon"><i data-feather="users"></i></span>
+      <span class="menu-text"> Status Agentes </span>
+    </a>
+  </li>
+  <li class="menu-item">
+    <a href="{% url 'maps' %}" class="menu-link">
+      <span class="menu-icon"><i data-feather="map"></i></span>
+      <span class="menu-text"> MAPS </span>
+    </a>
+  </li>
+
+  <li class="menu-title">Capacity</li>
+
+  <li class="menu-item">
     <a href="{% url 'users-map' %}" class="menu-link">
       <span class="menu-icon"><i data-feather="map-pin"></i></span>
-      <span class="menu-text"> Mapa Funcionários </span>
+      <span class="menu-text"> Localização </span>
     </a>
   </li>
 </ul>

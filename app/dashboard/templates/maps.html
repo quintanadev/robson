@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block site-title %}Dashboard{% endblock %}
+
+{% block page-title %}
+MAPS
+{% endblock %}
+
+{% block page-functions %}{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        <h4>MAPS</h4>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block css %}
+<!-- <link rel="stylesheet" href="{% static 'libs/animate.css/animate.min.css' %}">
+<link rel="stylesheet" href="{% static 'libs/animate.css/animate.compat.css' %}"> -->
+{% endblock %}
+
+{% block script %}
+<!-- <script src="{% static 'libs/apexcharts/apexcharts.min.js' %}"></script> -->
+<script src="{% static 'js/pages/maps.js' %}"></script>
+{% endblock %}

@@ -157,7 +157,7 @@ def get_nps():
   except:
     return {}
 
-def get_agents_status():
+def get_agents_status_blip():
   infos = auth()
   url = infos["url"]
   headers = infos["auth-human"]
@@ -174,7 +174,7 @@ def get_agents_status():
   data = dict_data.get("resource")
   return data
 
-def get_tickets_status():
+def get_tickets_status_blip():
   infos = auth()
   url = infos["url"]
   headers = infos["auth-human"]
